@@ -1,0 +1,31 @@
+{{define "body"}}
+<section class="feed-panel">
+  <div class="feed-panel-header">
+    <h1 class="feed-title">{{.WorkshopTitle}}</h1>
+    <button class="ghost-btn" @click="reset()">Reset progress</button>
+  </div>
+  {{if .WorkshopSub}}<p class="index-sub">{{.WorkshopSub}}</p>{{end}}
+
+  {{range .Sections}}
+  <div class="section-group">
+    <h2 class="section-label">{{.Label}}{{if ne .Label .Title}} · {{.Title}}{{end}}</h2>
+    <ul class="article-list">
+      {{range .Steps}}
+      <li>
+        <a class="article" href="{{.URL}}" :class="{ read: isDone('{{.Path}}') }">
+          <span class="article-dot"></span>
+          <div class="article-body">
+            <h3 class="article-title">
+              <span x-show="isDone('{{.Path}}')" class="tick" aria-hidden="true">✓ </span>{{.Title}}
+            </h3>
+            {{if .Summary}}<p class="article-description">{{.Summary}}</p>{{end}}
+            {{if .SideQuests}}<p class="article-meta">◇ {{.SideQuests}} side quest{{if gt .SideQuests 1}}s{{end}}</p>{{end}}
+          </div>
+        </a>
+      </li>
+      {{end}}
+    </ul>
+  </div>
+  {{end}}
+</section>
+{{end}}

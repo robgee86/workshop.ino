@@ -1,0 +1,16 @@
+{{define "body"}}
+<article class="article-detail">
+  <a class="ghost-btn back-btn" href="{{.BackURL}}">← Back to {{.BackTitle}}</a>
+
+  <div class="detail-card sidequest-card">
+    <p class="detail-eyebrow">◇ Side quest</p>
+    <h1 class="detail-title">{{.Heading}}</h1>
+    <div class="detail-body markdown">{{.Body}}</div>
+  </div>
+
+  <nav class="step-nav">
+    <a class="ghost-btn" href="{{.BackURL}}">‹ Back to {{.BackTitle}}</a>
+    <span></span>
+  </nav>
+</article>
+{{end}}

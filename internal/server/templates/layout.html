@@ -1,0 +1,39 @@
+{{define "layout"}}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.PageTitle}}</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script>window.WORKSHOP = {{.ConfigJSON}};</script>
+  <script src="/static/app.js" defer></script>
+  {{if .HasMermaid}}<script src="/static/mermaid.min.js" defer></script>{{end}}
+  <script src="/static/alpine.min.js" defer></script>
+</head>
+<body x-data="handbook()">
+  <div class="container">
+    <header class="header">
+      <a class="header-left" href="/">
+        <span class="logo-mark">◢◤</span>
+        <span class="arduino-text">{{.WorkshopTitle}}</span>
+      </a>
+      <div class="header-right">
+        <div class="progress" title="Checkpoints completed">
+          <div class="progress-track">
+            <div class="progress-fill" :style="`width:${pct}%`"></div>
+          </div>
+          <span class="progress-label" x-text="`${done}/${total} · ${pct}%`">0/0 · 0%</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      {{block "body" .}}{{end}}
+    </main>
+
+    <footer class="foot">
+      <span>{{.WorkshopTitle}}{{if .WorkshopSub}} — {{.WorkshopSub}}{{end}}</span>
+    </footer>
+  </div>
+</body>
+</html>{{end}}

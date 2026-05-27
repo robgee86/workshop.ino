@@ -1,0 +1,40 @@
+{{define "body"}}
+<article class="article-detail">
+  <a class="ghost-btn back-btn" href="/">← All steps</a>
+
+  <div class="detail-card">
+    {{if .Eyebrow}}<p class="detail-eyebrow">{{.Eyebrow}}</p>{{end}}
+    <h1 class="detail-title">{{.Heading}}</h1>
+
+    <div class="detail-body markdown">{{.Body}}</div>
+
+    {{if .SideQuests}}
+    <div class="sidequests">
+      <p class="sidequests-label">◇ Side quests</p>
+      <ul>
+        {{range .SideQuests}}<li><a href="{{.URL}}">{{.Title}}</a></li>{{end}}
+      </ul>
+    </div>
+    {{end}}
+
+    {{if .Attachments}}
+    <div class="attachments">
+      <p class="attachments-label">▼ Attachments</p>
+      <ul>
+        {{range .Attachments}}
+        <li>
+          <a href="{{.URL}}" download>⬇ {{.Label}}</a>
+          {{if .Description}}<span class="attachment-desc">— {{.Description}}</span>{{end}}
+        </li>
+        {{end}}
+      </ul>
+    </div>
+    {{end}}
+  </div>
+
+  <nav class="step-nav">
+    {{if .Prev}}<a class="ghost-btn" href="{{.Prev.URL}}">‹ {{.Prev.Title}}</a>{{else}}<span></span>{{end}}
+    {{if .Next}}<a class="ghost-btn next" href="{{.Next.URL}}">{{.Next.Title}} ›</a>{{else}}<span></span>{{end}}
+  </nav>
+</article>
+{{end}}
