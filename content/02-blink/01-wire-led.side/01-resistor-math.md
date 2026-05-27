@@ -2,8 +2,6 @@
 title: Resistor Math
 ---
 
-# Why 220Ω?
-
 An LED needs current-limiting or it burns out. Ohm's law gives the resistor value:
 
 ```

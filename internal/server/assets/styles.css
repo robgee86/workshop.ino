@@ -57,7 +57,7 @@ main { display: flex; flex-direction: column; gap: 20px; }
   text-decoration: none;
   color: inherit;
 }
-.logo-mark { color: var(--teal); font-size: 1.1rem; letter-spacing: -2px; }
+.arduino-logo { height: 30px; width: auto; display: block; }
 .arduino-text {
   margin: 0;
   font-family: var(--mono);
@@ -277,9 +277,60 @@ pre.mermaid { background: transparent; border: none; text-align: center; }
 .sidequests a:hover, .attachments a:hover { text-decoration: underline; }
 .attachment-desc { color: var(--text-muted); font-size: 0.9rem; margin-left: 6px; }
 
+/* Download icon (arrow into tray) for the attachments header and links. */
+.attachments-label,
+.attachments a { display: inline-flex; align-items: center; gap: 6px; }
+.attachments-label::before,
+.attachments a::before {
+  content: "";
+  display: inline-block;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  background: center / contain no-repeat
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235d6a6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12'/%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3Cpath d='M5 21h14'/%3E%3C/svg%3E");
+}
+.attachments a::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23006c6f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12'/%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3Cpath d='M5 21h14'/%3E%3C/svg%3E");
+}
+
 /* ---------- Step nav ---------- */
-.step-nav { display: flex; justify-content: space-between; gap: 12px; }
-.step-nav .next { margin-left: auto; }
+.step-nav { display: flex; justify-content: space-between; align-items: stretch; gap: 12px; }
+/* Prev/next reuse the plain ghost-button look, with inline Prev/Next labels. */
+.nav-btn {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  max-width: 48%;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.85rem;
+  padding: 7px 13px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+.nav-btn:hover { background: var(--surface); border-color: var(--teal); color: var(--teal); }
+.nav-btn.next { margin-left: auto; }
+.nav-arrow { opacity: 0.6; }
+.nav-text { display: inline-flex; align-items: baseline; gap: 6px; min-width: 0; }
+.nav-dir {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.55;
+}
+.nav-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-hint {
+  margin: 10px 0 0;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
 
 /* ---------- Footer ---------- */
 .foot {

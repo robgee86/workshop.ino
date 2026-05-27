@@ -9,8 +9,12 @@
   </div>
 
   <nav class="step-nav">
-    <a class="ghost-btn" href="{{.BackURL}}">‹ Back to {{.BackTitle}}</a>
+    <a class="nav-btn prev" rel="prev" href="{{.BackURL}}">
+      <span class="nav-arrow">‹</span>
+      <span class="nav-text"><span class="nav-dir">Back to</span><span class="nav-title">{{.BackTitle}}</span></span>
+    </a>
     <span></span>
   </nav>
+  <p class="nav-hint">Press ← to go back</p>
 </article>
 {{end}}

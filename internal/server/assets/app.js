@@ -84,5 +84,26 @@
       window.mermaid.initialize({ startOnLoad: false, theme: "neutral" });
       window.mermaid.run({ querySelector: "pre.mermaid" });
     }
+
+    // Keyboard navigation between steps. Left = previous, Right = next.
+    // Up/Down are intentionally left alone so they still scroll the page.
+    var prevLink = document.querySelector('a[rel="prev"]');
+    var nextLink = document.querySelector('a[rel="next"]');
+    if (prevLink || nextLink) {
+      document.addEventListener("keydown", function (e) {
+        if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+        var el = e.target;
+        if (el && el.closest && el.closest('input, textarea, select, [contenteditable="true"]')) {
+          return;
+        }
+        if (e.key === "ArrowRight" && nextLink) {
+          e.preventDefault();
+          window.location.href = nextLink.href;
+        } else if (e.key === "ArrowLeft" && prevLink) {
+          e.preventDefault();
+          window.location.href = prevLink.href;
+        }
+      });
+    }
   });
 })();

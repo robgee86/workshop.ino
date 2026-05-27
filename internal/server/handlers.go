@@ -140,13 +140,19 @@ func (s *Server) handleStep(w http.ResponseWriter, r *http.Request) {
 	for _, sq := range step.SideQuests {
 		data.SideQuests = append(data.SideQuests, linkView{Title: sq.Title, URL: "/q/" + sq.Path})
 	}
-	if prev, next := ws.Neighbors(p); prev != nil || next != nil {
-		if prev != nil {
-			data.Prev = &linkView{Title: prev.Title, URL: "/s/" + prev.Path}
-		}
-		if next != nil {
-			data.Next = &linkView{Title: next.Title, URL: "/s/" + next.Path}
-		}
+	prev, next := ws.Neighbors(p)
+	if prev != nil {
+		data.Prev = &linkView{Title: prev.Title, URL: "/s/" + prev.Path}
+	}
+	if next != nil {
+		data.Next = &linkView{Title: next.Title, URL: "/s/" + next.Path}
+	}
+	// At the very start (intro) and end (outro), the missing neighbor links home.
+	if data.Prev == nil && step.Kind == content.Intro {
+		data.Prev = &linkView{Title: "Home", URL: "/"}
+	}
+	if data.Next == nil && step.Kind == content.Outro {
+		data.Next = &linkView{Title: "Home", URL: "/"}
 	}
 	s.render(w, s.step, data)
 }

@@ -1,4 +1,6 @@
-# RGB Bonus
+---
+title: RGB Bonus
+---
 
 Want colour? An RGB LED is just three LEDs in one package. Wire each leg to its
 own pin through its own resistor, then mix:

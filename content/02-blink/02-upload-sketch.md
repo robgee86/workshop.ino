@@ -7,8 +7,6 @@ attachments:
     description: The finished blink, if you get stuck.
 ---
 
-# Upload the Blink Sketch
-
 Fill in the starter sketch so the LED turns on for a second, then off for a second,
 forever:
 
@@ -27,16 +25,14 @@ void loop() {
 }
 ```
 
-What happens each cycle:
+What `loop()` does, over and over:
 
 ```mermaid
-sequenceDiagram
-  loop every 2s
-    loop()->>LED: HIGH (on)
-    loop()->>loop(): delay 1000ms
-    loop()->>LED: LOW (off)
-    loop()->>loop(): delay 1000ms
-  end
+flowchart TD
+  A[LED HIGH on] --> B[delay 1000 ms]
+  B --> C[LED LOW off]
+  C --> D[delay 1000 ms]
+  D --> A
 ```
 
 Click **Upload** (the arrow). After it compiles and flashes, the LED blinks 🎉.

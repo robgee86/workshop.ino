@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{.PageTitle}}</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
   <link rel="stylesheet" href="/static/styles.css">
   <script>window.WORKSHOP = {{.ConfigJSON}};</script>
   <script src="/static/app.js" defer></script>
@@ -14,7 +15,7 @@
   <div class="container">
     <header class="header">
       <a class="header-left" href="/">
-        <span class="logo-mark">◢◤</span>
+        <img class="arduino-logo" src="/static/RGB-Arduino-Logo-Color-Inline-Loop.svg" alt="Arduino">
         <span class="arduino-text">{{.WorkshopTitle}}</span>
       </a>
       <div class="header-right">

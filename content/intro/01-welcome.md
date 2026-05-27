@@ -3,8 +3,6 @@ title: Welcome
 summary: What you'll build today and how to use this handbook.
 ---
 
-# Welcome 👋
-
 By the end of this short workshop you'll have an LED blinking on an Arduino board —
 and you'll understand every line that makes it happen.
 

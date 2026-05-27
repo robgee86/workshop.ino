@@ -3,8 +3,6 @@ title: Next Steps
 summary: Where to go from here.
 ---
 
-# Next Steps 🚀
-
 You blinked an LED — the "hello world" of hardware. From here you can:
 
 - Make the blink **faster or slower** by changing the `delay()` values.

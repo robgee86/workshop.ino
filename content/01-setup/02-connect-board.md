@@ -3,8 +3,6 @@ title: Connect Your Board
 summary: Plug in and select the right port.
 ---
 
-# Connect Your Board
-
 Connect the Arduino to your laptop with a USB cable. The IDE talks to the board
 through a serial port, which you must select.
 

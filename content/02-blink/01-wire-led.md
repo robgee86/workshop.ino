@@ -10,8 +10,6 @@ attachments:
     description: Printable version of the circuit below.
 ---
 
-# Wire the LED
-
 Build this circuit: pin **D13** → LED (long leg) → **220Ω resistor** → **GND**.
 
 ![LED wiring diagram](../assets/wiring.svg)

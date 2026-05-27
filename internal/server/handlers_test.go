@@ -105,6 +105,44 @@ func TestDownloadServesAndGuards(t *testing.T) {
 	}
 }
 
+func TestIntroOutroHomeNav(t *testing.T) {
+	root := t.TempDir()
+	write := func(rel, body string) {
+		p := filepath.Join(root, rel)
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("workshop.yaml", "title: T\n")
+	write("intro/01-hi.md", "---\ntitle: Hi\n---\nhello\n")
+	write("01-m/01-s.md", "---\ntitle: Step\n---\nbody\n")
+	write("outro/01-bye.md", "---\ntitle: Bye\n---\nbye\n")
+	h, err := New(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Intro's first step has no real previous: its Prev goes home.
+	if _, body := get(t, h, "/s/intro/01-hi"); !strings.Contains(body, `class="nav-btn prev" rel="prev" href="/"`) {
+		t.Errorf("intro page missing home Prev button")
+	}
+	// Outro's last step has no real next: its Next goes home.
+	if _, body := get(t, h, "/s/outro/01-bye"); !strings.Contains(body, `class="nav-btn next" rel="next" href="/"`) {
+		t.Errorf("outro page missing home Next button")
+	}
+	// A milestone step in the middle keeps real linear neighbors, not home.
+	_, body := get(t, h, "/s/01-m/01-s")
+	if strings.Contains(body, `href="/"`) && !strings.Contains(body, `href="/s/`) {
+		t.Errorf("milestone step should link to real steps, not home")
+	}
+	if !strings.Contains(body, `href="/s/intro/01-hi"`) || !strings.Contains(body, `href="/s/outro/01-bye"`) {
+		t.Errorf("milestone step missing linear prev/next: %s", body)
+	}
+}
+
 func TestUnknownStep404(t *testing.T) {
 	h := newTestServer(t)
 	if res, _ := get(t, h, "/s/does/not/exist"); res.StatusCode != 404 {

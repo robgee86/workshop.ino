@@ -3,8 +3,6 @@ title: Install the Arduino IDE
 summary: Get the tools onto your machine.
 ---
 
-# Install the Arduino IDE
-
 Download and install the Arduino IDE for your operating system from the offline
 installer your instructor provided.
 

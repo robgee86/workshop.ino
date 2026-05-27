@@ -1,7 +1,5 @@
 {{define "body"}}
 <article class="article-detail">
-  <a class="ghost-btn back-btn" href="/">← All steps</a>
-
   <div class="detail-card">
     {{if .Eyebrow}}<p class="detail-eyebrow">{{.Eyebrow}}</p>{{end}}
     <h1 class="detail-title">{{.Heading}}</h1>
@@ -19,11 +17,11 @@
 
     {{if .Attachments}}
     <div class="attachments">
-      <p class="attachments-label">▼ Attachments</p>
+      <p class="attachments-label">Attachments</p>
       <ul>
         {{range .Attachments}}
         <li>
-          <a href="{{.URL}}" download>⬇ {{.Label}}</a>
+          <a href="{{.URL}}" download>{{.Label}}</a>
           {{if .Description}}<span class="attachment-desc">— {{.Description}}</span>{{end}}
         </li>
         {{end}}
@@ -33,8 +31,19 @@
   </div>
 
   <nav class="step-nav">
-    {{if .Prev}}<a class="ghost-btn" href="{{.Prev.URL}}">‹ {{.Prev.Title}}</a>{{else}}<span></span>{{end}}
-    {{if .Next}}<a class="ghost-btn next" href="{{.Next.URL}}">{{.Next.Title}} ›</a>{{else}}<span></span>{{end}}
+    {{if .Prev}}
+    <a class="nav-btn prev" rel="prev" href="{{.Prev.URL}}">
+      <span class="nav-arrow">‹</span>
+      <span class="nav-text"><span class="nav-dir">Prev</span><span class="nav-title">{{.Prev.Title}}</span></span>
+    </a>
+    {{else}}<span></span>{{end}}
+    {{if .Next}}
+    <a class="nav-btn next" rel="next" href="{{.Next.URL}}">
+      <span class="nav-text"><span class="nav-dir">Next</span><span class="nav-title">{{.Next.Title}}</span></span>
+      <span class="nav-arrow">›</span>
+    </a>
+    {{else}}<span></span>{{end}}
   </nav>
+  {{if or .Prev .Next}}<p class="nav-hint">Use ← → to move between steps</p>{{end}}
 </article>
 {{end}}
