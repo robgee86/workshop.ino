@@ -143,6 +143,72 @@ func TestIntroOutroHomeNav(t *testing.T) {
 	}
 }
 
+func TestStepPatchesRender(t *testing.T) {
+	root := t.TempDir()
+	write := func(rel, body string) {
+		p := filepath.Join(root, rel)
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("workshop.yaml", "title: T\n")
+	write("01-m/01-s.md", "---\ntitle: Step\npatches:\n  - path: ./change.patch\n    label: My change\n---\nbody\n")
+	write("01-m/change.patch", "--- a/x.go\n+++ b/x.go\n@@ -1,2 +1,2 @@\n keep me\n-old line\n+new line\n")
+
+	h, err := New(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, body := get(t, h, "/s/01-m/01-s")
+	for _, want := range []string{"Code changes", "My change", "x.go", "diff-line add", "diff-line del", "diff-copy", "new line"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("step page missing %q", want)
+		}
+	}
+}
+
+func TestStepLinksRender(t *testing.T) {
+	root := t.TempDir()
+	write := func(rel, body string) {
+		p := filepath.Join(root, rel)
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("workshop.yaml", "title: T\n")
+	write(
+		"01-m/01-s.md",
+		"---\ntitle: Step\nlinks:\n  - url: https://docs.example.com/ref\n    label: Example reference\n    description: Official docs\n  - url: https://example.com/bare\n---\nbody\n",
+	)
+	h, err := New(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, body := get(t, h, "/s/01-m/01-s")
+	wants := []string{
+		"References",
+		`href="https://docs.example.com/ref"`,
+		`target="_blank"`,
+		`rel="noopener noreferrer"`,
+		"Example reference",
+		"Official docs",
+		// A bare-URL link falls back to showing the URL itself as the label.
+		`href="https://example.com/bare"`,
+		"https://example.com/bare",
+	}
+	for _, w := range wants {
+		if !strings.Contains(body, w) {
+			t.Errorf("step page missing %q", w)
+		}
+	}
+}
+
 func TestUnknownStep404(t *testing.T) {
 	h := newTestServer(t)
 	if res, _ := get(t, h, "/s/does/not/exist"); res.StatusCode != 404 {

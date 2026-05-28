@@ -124,6 +124,8 @@ func scanStep(root, dir, file string, kind SectionKind) *Step {
 		FilePath:    abs,
 		Kind:        kind,
 		Attachments: fm.Attachments,
+		Patches:     fm.Patches,
+		Links:       fm.Links,
 	}
 	st.SideQuests = scanSideQuests(root, dir, seg, stepPath)
 	return st

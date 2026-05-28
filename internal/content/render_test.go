@@ -118,6 +118,23 @@ func TestSplitFrontmatter(t *testing.T) {
 	}
 }
 
+func TestSplitFrontmatterLinks(t *testing.T) {
+	src := []byte("---\ntitle: Step\nlinks:\n  - url: https://example.com/ref\n    label: Example\n    description: A reference page\n  - url: https://example.com/bare\n---\nbody\n")
+	fm, _, err := SplitFrontmatter(src)
+	if err != nil {
+		t.Fatalf("SplitFrontmatter error: %v", err)
+	}
+	if len(fm.Links) != 2 {
+		t.Fatalf("got %d links, want 2", len(fm.Links))
+	}
+	if l := fm.Links[0]; l.URL != "https://example.com/ref" || l.Label != "Example" || l.Description != "A reference page" {
+		t.Errorf("links[0] = %+v", l)
+	}
+	if l := fm.Links[1]; l.URL != "https://example.com/bare" || l.Label != "" {
+		t.Errorf("links[1] = %+v (label should fall back later in the view, not the parse)", l)
+	}
+}
+
 func TestSplitFrontmatterNoFrontmatter(t *testing.T) {
 	src := []byte("# Just a heading\n\nNo frontmatter here.\n")
 

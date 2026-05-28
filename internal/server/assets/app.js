@@ -80,6 +80,27 @@
       block.appendChild(btn);
     });
 
+    // Per-file "Copy" on diffs: copy the new-side code (context + additions,
+    // deletions dropped, no +/- markers or line numbers) for easy pasting.
+    document.querySelectorAll(".diff-file").forEach(function (file) {
+      var btn = file.querySelector(".diff-copy");
+      if (!btn) return;
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation(); // don't toggle the <details>
+        var lines = [];
+        file.querySelectorAll("tr.diff-line:not(.del) .diff-code").forEach(function (c) {
+          lines.push(c.textContent);
+        });
+        navigator.clipboard.writeText(lines.join("\n")).then(function () {
+          btn.textContent = "Copied!";
+          setTimeout(function () {
+            btn.textContent = "Copy";
+          }, 1200);
+        });
+      });
+    });
+
     if (window.mermaid) {
       window.mermaid.initialize({ startOnLoad: false, theme: "neutral" });
       window.mermaid.run({ querySelector: "pre.mermaid" });

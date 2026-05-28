@@ -15,6 +15,47 @@
     </div>
     {{end}}
 
+    {{if .Changes}}
+    <details class="code-changes">
+      <summary class="code-changes-label">Code changes</summary>
+      {{range .Changes}}
+      <div class="changeset">
+        {{if .Label}}<p class="changeset-label">{{.Label}}</p>{{end}}
+        {{if .Description}}<p class="changeset-desc">{{.Description}}</p>{{end}}
+        {{if .Err}}<p class="changeset-err">⚠ {{.Err}}</p>{{end}}
+        {{range .Files}}
+        <details class="diff-file" open>
+          <summary class="diff-file-summary">
+            <span class="diff-status diff-status-{{.Status}}">{{.Status}}</span>
+            <span class="diff-path">{{if and (eq .Status "renamed") .OldPath}}{{.OldPath}} → {{end}}{{.Path}}</span>
+            <span class="diff-counts"><span class="diff-add">+{{.Additions}}</span> <span class="diff-del">−{{.Deletions}}</span></span>
+            <button type="button" class="diff-copy">Copy</button>
+          </summary>
+          {{if .Binary}}
+          <p class="diff-binary">Binary file — not shown.</p>
+          {{else}}
+          <div class="diff-scroll">
+            <table class="diff"><tbody>
+              {{range .Hunks}}
+                {{if .Heading}}<tr class="diff-hunk-heading"><td colspan="3">{{.Heading}}</td></tr>{{end}}
+                {{range .Lines}}
+                <tr class="diff-line {{.Kind}}">
+                  <td class="diff-num diff-old">{{if .OldNum}}{{.OldNum}}{{end}}</td>
+                  <td class="diff-num diff-new">{{if .NewNum}}{{.NewNum}}{{end}}</td>
+                  <td class="diff-code">{{.Text}}</td>
+                </tr>
+                {{end}}
+              {{end}}
+            </tbody></table>
+          </div>
+          {{end}}
+        </details>
+        {{end}}
+      </div>
+      {{end}}
+    </details>
+    {{end}}
+
     {{if .Attachments}}
     <div class="attachments">
       <p class="attachments-label">Attachments</p>
@@ -22,6 +63,20 @@
         {{range .Attachments}}
         <li>
           <a href="{{.URL}}" download>{{.Label}}</a>
+          {{if .Description}}<span class="attachment-desc">— {{.Description}}</span>{{end}}
+        </li>
+        {{end}}
+      </ul>
+    </div>
+    {{end}}
+
+    {{if .References}}
+    <div class="references">
+      <p class="references-label">References</p>
+      <ul>
+        {{range .References}}
+        <li>
+          <a href="{{.URL}}"{{if .External}} target="_blank" rel="noopener noreferrer"{{end}}>{{.Label}}</a>
           {{if .Description}}<span class="attachment-desc">— {{.Description}}</span>{{end}}
         </li>
         {{end}}

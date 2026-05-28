@@ -33,6 +33,8 @@ type Step struct {
 	FilePath    string // absolute path to the .md on disk
 	Kind        SectionKind
 	Attachments []Attachment
+	Patches     []Attachment
+	Links       []Link
 	SideQuests  []*SideQuest
 }
 

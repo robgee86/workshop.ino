@@ -259,12 +259,12 @@ main { display: flex; flex-direction: column; gap: 20px; }
 pre.mermaid { background: transparent; border: none; text-align: center; }
 
 /* ---------- Side quests + attachments ---------- */
-.sidequests, .attachments {
+.sidequests, .attachments, .code-changes, .references {
   margin-top: 22px;
   padding-top: 18px;
   border-top: 1px dashed var(--border);
 }
-.sidequests-label, .attachments-label {
+.sidequests-label, .attachments-label, .code-changes-label, .references-label {
   margin: 0 0 8px;
   font-family: var(--mono);
   font-size: 0.74rem;
@@ -272,16 +272,17 @@ pre.mermaid { background: transparent; border: none; text-align: center; }
   letter-spacing: 0.08em;
   color: var(--text-muted);
 }
-.sidequests ul, .attachments ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.sidequests a, .attachments a { color: var(--teal-strong); text-decoration: none; font-weight: 600; }
-.sidequests a:hover, .attachments a:hover { text-decoration: underline; }
+/* Bulleted item lists: side quests, attachments, and references. */
+.sidequests ul, .attachments ul, .references ul { list-style: disc; margin: 0; padding-left: 1.6em; }
+.sidequests li, .attachments li, .references li { margin: 4px 0; }
+.sidequests li::marker, .attachments li::marker, .references li::marker { color: var(--text-muted); }
+.sidequests a, .attachments a, .references a { color: var(--teal-strong); text-decoration: none; font-weight: 600; }
+.sidequests a:hover, .attachments a:hover, .references a:hover { text-decoration: underline; }
 .attachment-desc { color: var(--text-muted); font-size: 0.9rem; margin-left: 6px; }
 
-/* Download icon (arrow into tray) for the attachments header and links. */
-.attachments-label,
-.attachments a { display: inline-flex; align-items: center; gap: 6px; }
-.attachments-label::before,
-.attachments a::before {
+/* Download icon (arrow into tray) for the attachments section header only. */
+.attachments-label { display: inline-flex; align-items: center; gap: 6px; }
+.attachments-label::before {
   content: "";
   display: inline-block;
   flex: none;
@@ -290,9 +291,114 @@ pre.mermaid { background: transparent; border: none; text-align: center; }
   background: center / contain no-repeat
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235d6a6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12'/%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3Cpath d='M5 21h14'/%3E%3C/svg%3E");
 }
-.attachments a::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23006c6f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12'/%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3Cpath d='M5 21h14'/%3E%3C/svg%3E");
+
+/* External-link icon (arrow out of a box) for the references section header only. */
+.references-label { display: inline-flex; align-items: center; gap: 6px; }
+.references-label::before {
+  content: "";
+  display: inline-block;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  background: center / contain no-repeat
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235d6a6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 3h6v6'/%3E%3Cpath d='M10 14 21 3'/%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3C/svg%3E");
 }
+
+/* ---------- Code changes (diffs) ---------- */
+/* The whole section is a <details>, collapsed by default. */
+summary.code-changes-label {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+  transition: color 150ms ease;
+}
+summary.code-changes-label::-webkit-details-marker { display: none; }
+summary.code-changes-label::before {
+  content: "▸";
+  font-size: 1.25em;
+  line-height: 1;
+  transition: transform 120ms ease;
+}
+details.code-changes[open] > summary.code-changes-label::before { transform: rotate(90deg); }
+summary.code-changes-label:hover { color: var(--teal); }
+details.code-changes[open] > summary.code-changes-label { margin-bottom: 14px; }
+
+.changeset { margin-bottom: 16px; }
+.changeset-label { margin: 0 0 2px; font-weight: 600; }
+.changeset-desc { margin: 0 0 10px; color: var(--text-muted); font-size: 0.9rem; }
+.changeset-err { margin: 0; color: var(--danger); font-family: var(--mono); font-size: 0.8rem; }
+
+.diff-file {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+  background: var(--surface-strong);
+}
+.diff-file-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  list-style: none;
+}
+.diff-file-summary::-webkit-details-marker { display: none; }
+.diff-path { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--text); }
+.diff-counts { display: inline-flex; gap: 8px; white-space: nowrap; }
+.diff-add { color: #2e7d32; }
+.diff-del { color: var(--danger); }
+.diff-status {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.diff-status-added { color: #2e7d32; border-color: #2e7d32; }
+.diff-status-deleted { color: var(--danger); border-color: var(--danger); }
+.diff-status-renamed, .diff-status-copied { color: #b07d2b; border-color: #b07d2b; }
+.diff-copy {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  padding: 2px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-strong);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.diff-copy:hover { color: var(--teal); border-color: var(--teal); }
+
+.diff-scroll { overflow-x: auto; }
+table.diff { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.8rem; line-height: 1.5; }
+.diff-line td { padding: 0; vertical-align: top; }
+.diff-num {
+  width: 1%;
+  padding: 0 8px;
+  text-align: right;
+  color: var(--text-muted);
+  opacity: 0.7;
+  user-select: none;
+  white-space: nowrap;
+  border-right: 1px solid var(--border);
+}
+.diff-code { width: 100%; padding: 0 10px; white-space: pre; }
+.diff-line.ctx .diff-code::before { content: "  "; }
+.diff-line.add { background: rgba(46, 125, 50, 0.10); }
+.diff-line.add .diff-code::before { content: "+ "; color: #2e7d32; }
+.diff-line.del { background: rgba(193, 69, 69, 0.10); }
+.diff-line.del .diff-code::before { content: "− "; color: var(--danger); }
+.diff-hunk-heading td { padding: 2px 10px; color: var(--text-muted); background: var(--surface); font-style: italic; }
+.diff-binary { margin: 0; padding: 10px 12px; color: var(--text-muted); font-family: var(--mono); font-size: 0.8rem; }
 
 /* ---------- Step nav ---------- */
 .step-nav { display: flex; justify-content: space-between; align-items: stretch; gap: 12px; }

@@ -145,6 +145,41 @@ func TestScanSideQuests(t *testing.T) {
 	}
 }
 
+func TestScanSideQuestsForIntroAndOutro(t *testing.T) {
+	root := t.TempDir()
+	write := func(rel, body string) {
+		p := filepath.Join(root, rel)
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("workshop.yaml", "title: T\n")
+	write("intro/01-hi.md", "---\ntitle: Hi\n---\nhello\n")
+	write("intro/01-hi.side.md", "---\ntitle: Intro Detour\n---\nmore\n") // shorthand under intro
+	write("01-m/01-s.md", "---\ntitle: Step\n---\nbody\n")
+	write("outro/01-bye.md", "---\ntitle: Bye\n---\nbye\n")
+	write("outro/01-bye.side/01-extra.md", "---\ntitle: Outro Detour\n---\nmore\n") // folder form under outro
+
+	ws, err := Scan(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	intro := ws.FindStep("intro/01-hi")
+	if intro == nil || len(intro.SideQuests) != 1 || intro.SideQuests[0].Title != "Intro Detour" {
+		t.Errorf("intro side quest not discovered: %+v", intro)
+	}
+	out := ws.FindStep("outro/01-bye")
+	if out == nil || len(out.SideQuests) != 1 || out.SideQuests[0].Title != "Outro Detour" {
+		t.Errorf("outro side quest not discovered: %+v", out)
+	}
+	if ws.FindSideQuest("outro/01-bye/01-extra") == nil {
+		t.Errorf("outro side quest not resolvable via FindSideQuest")
+	}
+}
+
 func TestScanCheckpointsExcludeExtras(t *testing.T) {
 	ws, err := Scan(buildFixture(t))
 	if err != nil {

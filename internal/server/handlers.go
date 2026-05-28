@@ -31,6 +31,12 @@ type attachmentView struct {
 	Label, Description, URL string
 }
 
+// referenceView is an external reference rendered in the "References" section.
+type referenceView struct {
+	Label, Description, URL string
+	External                bool // emit target="_blank" rel="noopener noreferrer"
+}
+
 type stepLink struct {
 	linkView
 	Path         string // bare checkpoint path, e.g. "01-setup/02-wiring"
@@ -50,12 +56,23 @@ type indexData struct {
 	Sections []sectionView
 }
 
+// changeSet is one referenced .patch, parsed for the "Code changes" section.
+// Err is set (and Files nil) when the patch can't be read or parsed.
+type changeSet struct {
+	Label       string
+	Description string
+	Files       []content.DiffFile
+	Err         string
+}
+
 type stepData struct {
 	baseData
 	Eyebrow     string
 	Heading     string
 	Body        template.HTML
+	Changes     []changeSet
 	Attachments []attachmentView
+	References  []referenceView
 	SideQuests  []linkView
 	Prev        *linkView
 	Next        *linkView
@@ -137,6 +154,21 @@ func (s *Server) handleStep(w http.ResponseWriter, r *http.Request) {
 		}
 		data.Attachments = append(data.Attachments, attachmentView{Label: label, Description: a.Description, URL: url})
 	}
+	for _, pt := range step.Patches {
+		data.Changes = append(data.Changes, s.buildChangeSet(baseDir, pt))
+	}
+	for _, l := range step.Links {
+		label := l.Label
+		if label == "" {
+			label = l.URL
+		}
+		data.References = append(data.References, referenceView{
+			Label:       label,
+			Description: l.Description,
+			URL:         l.URL,
+			External:    isExternalURL(l.URL),
+		})
+	}
 	for _, sq := range step.SideQuests {
 		data.SideQuests = append(data.SideQuests, linkView{Title: sq.Title, URL: "/q/" + sq.Path})
 	}
@@ -202,6 +234,34 @@ func (s *Server) handleDownload(w http.ResponseWriter, r *http.Request) {
 
 // renderFile reads a Markdown file, strips frontmatter, and renders the body,
 // resolving relative image links against the file's directory.
+// buildChangeSet resolves, reads, and parses a referenced .patch. Any failure is
+// returned as a non-fatal note on the change set so the page still renders.
+func (s *Server) buildChangeSet(baseDir string, pt content.Attachment) changeSet {
+	cs := changeSet{Label: pt.Label, Description: pt.Description}
+	resolved, ok := content.ResolveRel(baseDir, pt.Path)
+	if !ok {
+		cs.Err = "could not resolve patch path: " + pt.Path
+		return cs
+	}
+	abs, err := resolveDownload(s.contentRoot, resolved)
+	if err != nil {
+		cs.Err = "patch not found: " + pt.Path
+		return cs
+	}
+	raw, err := os.ReadFile(abs)
+	if err != nil {
+		cs.Err = "could not read patch: " + pt.Path
+		return cs
+	}
+	files, err := content.ParsePatch(raw)
+	if err != nil {
+		cs.Err = "could not parse patch: " + pt.Path
+		return cs
+	}
+	cs.Files = files
+	return cs
+}
+
 func (s *Server) renderFile(absFile string) (template.HTML, error) {
 	data, err := os.ReadFile(absFile)
 	if err != nil {
@@ -282,6 +342,15 @@ func stepEyebrow(ws *content.Workshop, p string) string {
 // hasMermaid reports whether rendered HTML contains a Mermaid diagram block.
 func hasMermaid(html template.HTML) bool {
 	return strings.Contains(string(html), `<pre class="mermaid">`)
+}
+
+// isExternalURL reports whether a reference URL points off-site and should
+// therefore open in a new tab. Internal links (relative paths) stay in-tab.
+func isExternalURL(u string) bool {
+	return strings.HasPrefix(u, "http://") ||
+		strings.HasPrefix(u, "https://") ||
+		strings.HasPrefix(u, "//") ||
+		strings.HasPrefix(u, "mailto:")
 }
 
 // slug makes a string safe for use as a localStorage namespace key.

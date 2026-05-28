@@ -14,11 +14,20 @@ type Attachment struct {
 	Description string `yaml:"description"`
 }
 
+// Link is an external reference rendered in the step's "References" section.
+type Link struct {
+	URL         string `yaml:"url"`
+	Label       string `yaml:"label"`
+	Description string `yaml:"description"`
+}
+
 // Frontmatter holds the optional YAML metadata at the top of a step document.
 type Frontmatter struct {
 	Title       string       `yaml:"title"`
 	Summary     string       `yaml:"summary"`
 	Attachments []Attachment `yaml:"attachments"`
+	Patches     []Attachment `yaml:"patches"`
+	Links       []Link       `yaml:"links"`
 }
 
 // SplitFrontmatter separates an optional leading YAML frontmatter block
