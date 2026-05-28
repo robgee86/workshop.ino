@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="140" viewBox="0 0 360 140" role="img" aria-label="LED wiring diagram">
+  <rect x="0" y="0" width="360" height="140" fill="#ecf1f1"/>
+  <rect x="18" y="40" width="70" height="60" rx="6" fill="#008184"/>
+  <text x="53" y="75" font-family="monospace" font-size="11" fill="#fff" text-anchor="middle">UNO</text>
+  <text x="92" y="58" font-family="monospace" font-size="10" fill="#2c353a">D13</text>
+  <line x1="88" y1="55" x2="200" y2="55" stroke="#2c353a" stroke-width="2"/>
+  <circle cx="210" cy="55" r="9" fill="#c14545"/>
+  <text x="210" y="38" font-family="monospace" font-size="10" fill="#2c353a" text-anchor="middle">LED</text>
+  <line x1="219" y1="55" x2="270" y2="55" stroke="#2c353a" stroke-width="2"/>
+  <rect x="270" y="48" width="40" height="14" fill="#d6a93a"/>
+  <text x="290" y="80" font-family="monospace" font-size="10" fill="#2c353a" text-anchor="middle">220Ω</text>
+  <line x1="310" y1="55" x2="330" y2="55" stroke="#2c353a" stroke-width="2"/>
+  <line x1="330" y1="55" x2="330" y2="100" stroke="#2c353a" stroke-width="2"/>
+  <line x1="330" y1="100" x2="88" y2="100" stroke="#2c353a" stroke-width="2"/>
+  <text x="92" y="96" font-family="monospace" font-size="10" fill="#2c353a">GND</text>
+</svg>
