@@ -47,6 +47,50 @@ go build -o workshopify .
 
 ---
 
+## Deployment
+
+Two ways to run workshopify on a board (or any Linux host). Pick the one that fits.
+
+### Native binary (+ optional systemd)
+
+1. Grab `workshopify-linux-arm64` from the [latest GitHub Release](https://github.com/arduino/workshopify/releases/latest).
+2. Drop it in any directory with a `content/` folder beside it:
+
+   ```
+   anywhere/
+     workshopify-linux-arm64    (the binary; rename to `workshopify` if you like)
+     content/                   (your workshop)
+   ```
+
+3. Run it:
+
+   ```bash
+   chmod +x workshopify-linux-arm64
+   ./workshopify-linux-arm64
+   ```
+
+   The default `-content ./content` finds the folder next to it; the handbook is on `http://<host-ip>:8080/`.
+
+For a managed service, point [`deploy/workshopify.service`](deploy/workshopify.service) at wherever you dropped the binary (edit `WorkingDirectory` and `ExecStart`), then:
+
+```bash
+sudo cp deploy/workshopify.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now workshopify
+```
+
+### Docker container + Compose
+
+1. Copy [`deploy/docker-compose.yml`](deploy/docker-compose.yml) to the board.
+2. Put a `content/` folder next to it.
+3. `docker compose up -d`.
+
+The handbook is then on `http://<board-ip>/` (host `:80` → container `:8080`). The image is pulled from GHCR — refresh with `docker compose pull && docker compose up -d`.
+
+Both paths use the same arm64 artifacts published by the release workflow ([`.github/workflows/release.yml`](.github/workflows/release.yml)) on every `v*` tag.
+
+---
+
 ## Development
 
 ### Tests
