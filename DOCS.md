@@ -1,6 +1,6 @@
 # Authoring guide
 
-This is the full reference for writing a workshop with **workshopify**. For
+This is the full reference for writing a workshop with **workshop.ino**. For
 how to clone, build and run the tool itself, see [README.md](README.md).
 
 
@@ -294,7 +294,7 @@ Content is read from disk **on every request**. That means:
 - Change a `.patch` → refresh → the new diff renders.
 - Add, rename or reorder a step or milestone → refresh → it appears.
 
-No rebuild, no restart. (Templates, CSS and JS *are* embedded in the binary, so changes to those — usually only relevant if you're hacking on workshopify itself — do need a rebuild.)
+No rebuild, no restart. (Templates, CSS and JS *are* embedded in the binary, so changes to those — usually only relevant if you're hacking on workshop.ino itself — do need a rebuild.)
 
 
 ## From an event agenda to a workshop

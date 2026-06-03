@@ -7,8 +7,6 @@ on:
 
 jobs:
   release:
-    # Native arm64 runner — no QEMU, no cross-compile. The artifacts we produce
-    # are aarch64 by construction.
     runs-on: ubuntu-24.04-arm
     permissions:
       contents: write   # attach the binary to the GitHub Release
@@ -28,11 +26,8 @@ jobs:
       - name: Build static aarch64 binary
         env:
           CGO_ENABLED: "0"
-        # The runner is already arm64, so GOOS/GOARCH default to linux/arm64.
-        # CGO off keeps the binary self-contained so `FROM scratch` works.
         run: |
-          go build -trimpath -ldflags="-s -w" -o workshopify .
-          cp workshopify workshopify-linux-arm64
+          go build -trimpath -ldflags="-s -w" -o workshop.ino-linux-arm64 .
 
       - uses: docker/setup-buildx-action@v3
 
@@ -66,5 +61,5 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: workshopify-linux-arm64
+          files: workshop.ino-linux-arm64
           fail_on_unmatched_files: true

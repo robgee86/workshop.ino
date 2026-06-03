@@ -1,4 +1,4 @@
-// Command workshopify serves a Markdown-authored workshop lab handbook over the
+// Command workshop.ino serves a Markdown-authored workshop lab handbook over the
 // local network. Content lives on disk and is read per request, so instructors
 // can fix typos mid-workshop without rebuilding or restarting.
 package main
@@ -12,7 +12,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"workshopify/internal/server"
+	"workshop.ino/internal/server"
 )
 
 func main() {
@@ -46,7 +46,7 @@ func printURLs(addr, root string) {
 	if err != nil || port == "" {
 		port = "8080"
 	}
-	fmt.Printf("\n  workshopify  ·  serving %s\n\n", root)
+	fmt.Printf("\n  workshop.ino  ·  serving %s\n\n", root)
 	fmt.Printf("    http://localhost:%s\n", port)
 	for _, ip := range lanIPv4s() {
 		fmt.Printf("    http://%s:%s\n", ip, port)

@@ -1,4 +1,4 @@
-# workshopify
+# workshop.ino
 
 A live, offline-first **lab handbook server** for hands-on workshops. Authors write the workshop as a folder of Markdown files; participants open a link on their own laptop and follow along step by step. Code blocks have copy buttons, diffs between steps are pretty-printed, Mermaid diagrams render, and progress is tracked in each participant's browser.
 
@@ -21,7 +21,7 @@ The example Arduino-blink workshop in [content/](content/) will start serving.
 You'll see something like:
 
 ```
-  workshopify  ·  serving /…/workshopify/content
+  workshop.ino  ·  serving /…/workshop.ino/content
 
     http://localhost:8080
     http://192.168.1.86:8080
@@ -32,8 +32,8 @@ Share one of the LAN URLs in the room. Participants open it in any browser — n
 ### Build a distributable binary
 
 ```bash
-go build -o workshopify .
-./workshopify -content ./my-workshop -addr :8080
+go build -o workshop.ino .
+./workshop.ino -content ./my-workshop -addr :8080
 ```
 
 ### Flags
@@ -49,34 +49,34 @@ go build -o workshopify .
 
 ## Deployment
 
-Two ways to run workshopify on a board (or any Linux host). Pick the one that fits.
+Two ways to run workshop.ino on a board (or any Linux host). Pick the one that fits.
 
 ### Native binary (+ optional systemd)
 
-1. Grab `workshopify-linux-arm64` from the [latest GitHub Release](https://github.com/arduino/workshopify/releases/latest).
+1. Grab `workshop.ino-linux-arm64` from the [latest GitHub Release](https://github.com/arduino/workshop.ino/releases/latest).
 2. Drop it in any directory with a `content/` folder beside it:
 
    ```
    anywhere/
-     workshopify-linux-arm64    (the binary; rename to `workshopify` if you like)
+     workshop.ino-linux-arm64    (the binary; rename to `workshop.ino` if you like)
      content/                   (your workshop)
    ```
 
 3. Run it:
 
    ```bash
-   chmod +x workshopify-linux-arm64
-   ./workshopify-linux-arm64
+   chmod +x workshop.ino-linux-arm64
+   ./workshop.ino-linux-arm64
    ```
 
    The default `-content ./content` finds the folder next to it; the handbook is on `http://<host-ip>:8080/`.
 
-For a managed service, point [`deploy/workshopify.service`](deploy/workshopify.service) at wherever you dropped the binary (edit `WorkingDirectory` and `ExecStart`), then:
+For a managed service, point [`deploy/workshop.ino.service`](deploy/workshop.ino.service) at wherever you dropped the binary (edit `WorkingDirectory` and `ExecStart`), then:
 
 ```bash
-sudo cp deploy/workshopify.service /etc/systemd/system/
+sudo cp deploy/workshop.ino.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl enable --now workshopify
+sudo systemctl enable --now workshop.ino
 ```
 
 ### Docker container + Compose
@@ -85,7 +85,7 @@ sudo systemctl enable --now workshopify
 2. Put a `content/` folder next to it.
 3. `docker compose up -d`.
 
-The handbook is then on `http://<board-ip>/` (host `:80` → container `:8080`). The image is pulled from GHCR — refresh with `docker compose pull && docker compose up -d`.
+The handbook is then on `http://<board-ip>:8080/` (host `:8080` → container `:8080`, so it runs fine without root or a `sysctl` tweak — including under rootless Docker). The image is pulled from GHCR — refresh with `docker compose pull && docker compose up -d`.
 
 Both paths use the same arm64 artifacts published by the release workflow ([`.github/workflows/release.yml`](.github/workflows/release.yml)) on every `v*` tag.
 

@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"workshopify/internal/content"
+	"workshop.ino/internal/content"
 )
 
 // baseData is shared by every page: workshop chrome and progress wiring.

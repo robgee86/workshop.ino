@@ -1,10 +1,8 @@
-// Client-side progress (localStorage only — no server tracking), code-copy
-// buttons, and Mermaid diagram rendering.
 (function () {
   "use strict";
 
   var cfg = window.WORKSHOP || { id: "workshop", checkpoints: [], stepPath: "" };
-  var KEY = "workshopify:" + cfg.id + ":done";
+  var KEY = "workshop.ino:" + cfg.id + ":done";
 
   function loadDone() {
     try {
@@ -107,7 +105,6 @@
     }
 
     // Keyboard navigation between steps. Left = previous, Right = next.
-    // Up/Down are intentionally left alone so they still scroll the page.
     var prevLink = document.querySelector('a[rel="prev"]');
     var nextLink = document.querySelector('a[rel="next"]');
     if (prevLink || nextLink) {

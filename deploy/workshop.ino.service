@@ -1,0 +1,19 @@
+# Install:
+#   sudo cp deploy/workshop.ino.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now workshop.ino
+# Logs: journalctl -u workshop.ino -f
+
+[Unit]
+Description=workshop.ino — live workshop lab handbook
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/lib/workshop.ino
+ExecStart=/usr/local/bin/workshop.ino -content /var/lib/workshop.ino/content -addr :8080
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

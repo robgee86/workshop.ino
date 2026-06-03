@@ -1,26 +1,27 @@
-# Workshopify — Docker Compose deployment.
+# workshop.ino — Docker Compose deployment.
 #
 # Usage:
 #   1. Drop your workshop's `content/` folder NEXT TO this file
 #      (so the relative path `./content` below resolves correctly).
 #   2. `docker compose up -d`
-#   3. Visit http://<this-host-ip>/ (no port suffix, the service is on :80).
+#   3. Visit http://<this-host-ip>:8080/.
 #
 # Notes:
 #  - The image is pulled from GHCR; published from the release pipeline.
-#  - The container listens on :8080 internally; Docker publishes that as :80
-#    on the host. With rootful Docker this just works. On rootless Docker you
-#    need `sudo sysctl net.ipv4.ip_unprivileged_port_start=80` so the daemon
-#    can bind a privileged port (or change `80` below to e.g. `8080`).
-#  - Content is mounted read-only — instructors edit the files on disk and the
-#    server picks up the changes on the next request (no restart needed).
+#  - Host port 8080 → container 8080. An unprivileged port so this works
+#    under rootless Docker too, with no `sysctl` tweaks or root needed.
+#  - Content is mounted read-only — instructors edit the files on disk and
+#    the server picks up the changes on the next request (no restart needed).
+#  - The Compose spec forbids dots in service keys, hence `workshop-ino`
+#    here. The container and image both carry the project's full name
+#    (`workshop.ino`).
 
 services:
-  workshopify:
-    image: ghcr.io/arduino/workshopify:latest
-    container_name: workshopify
+  workshop-ino:
+    image: ghcr.io/arduino/workshop.ino:latest
+    container_name: workshop.ino
     restart: unless-stopped
     ports:
-      - "80:8080"
+      - "8080:8080"
     volumes:
       - ./content:/content:ro

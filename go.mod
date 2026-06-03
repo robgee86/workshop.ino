@@ -1,4 +1,4 @@
-module workshopify
+module workshop.ino
 
 go 1.26.3
 
