@@ -9,6 +9,10 @@ attachments:
   - path: ./blink-solution.ino
     label: Solution sketch
     description: The finished blink, if you get stuck.
+  - path: ./blink-solution.zip
+    label: Solution
+    description: Apply this to jump straight to a working blink app.
+    solution: true
 ---
 
 Fill in the starter sketch so the LED turns on for a second, then off for a second,

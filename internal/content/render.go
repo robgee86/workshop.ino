@@ -12,9 +12,12 @@ type Attachment struct {
 	Path        string `yaml:"path"`
 	Label       string `yaml:"label"`
 	Description string `yaml:"description"`
+	// Solution: an archive of a whole working app that can be applied over the
+	// target app (replacing it) — the easy path instead of following the diffs.
+	Solution bool `yaml:"solution"`
 }
 
-// Link is an external reference rendered in the step's "References" section.
+// Link is an external reference shown in a step's "References" section.
 type Link struct {
 	URL         string `yaml:"url"`
 	Label       string `yaml:"label"`
@@ -25,6 +28,7 @@ type Link struct {
 type Frontmatter struct {
 	Title       string       `yaml:"title"`
 	Summary     string       `yaml:"summary"`
+	App         string       `yaml:"app"` // overrides the workshop-level app for this step
 	Attachments []Attachment `yaml:"attachments"`
 	Patches     []Attachment `yaml:"patches"`
 	Links       []Link       `yaml:"links"`
@@ -52,15 +56,14 @@ func SplitFrontmatter(source []byte) (Frontmatter, []byte, error) {
 	return fm, rest[bodyStart:], nil
 }
 
-// findClosingFence scans b line by line for a line that is exactly "---",
-// returning the byte offset where that line begins (yamlEnd) and the offset of
-// the first byte after it (bodyStart).
+// findClosingFence finds the next line equal to "---", returning where that
+// line begins (yamlEnd) and where the line after it begins (bodyStart).
 func findClosingFence(b []byte) (yamlEnd, bodyStart int, ok bool) {
 	offset := 0
 	for offset < len(b) {
 		nl := bytes.IndexByte(b[offset:], '\n')
-		lineStop := len(b) // index of the newline (or end of input)
-		lineEnd := len(b)  // index of the first byte after this line
+		lineStop := len(b) // newline index, or end of input
+		lineEnd := len(b)  // first byte after this line
 		if nl >= 0 {
 			lineStop = offset + nl
 			lineEnd = offset + nl + 1

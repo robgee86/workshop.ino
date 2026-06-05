@@ -12,6 +12,12 @@
 #    under rootless Docker too, with no `sysctl` tweaks or root needed.
 #  - Content is mounted read-only — instructors edit the files on disk and
 #    the server picks up the changes on the next request (no restart needed).
+#  - The Arduino apps folder is mounted read-write at the same path the binary
+#    expects (`/home/arduino/ArduinoApps`): this is where "Apply solution"
+#    writes. Without this mount, Apply would only touch the container's throwaway
+#    layer, not the device's real apps. Adjust the host path if yours differs.
+#  - For applied files to be owned by the arduino user (not root), run the
+#    container as that user, e.g. add `user: "1000:1000"` (match `id arduino`).
 #  - The Compose spec forbids dots in service keys, hence `workshop-ino`
 #    here. The container and image both carry the project's full name
 #    (`workshop.ino`).
@@ -25,3 +31,4 @@ services:
       - "8080:8080"
     volumes:
       - ./content:/content:ro
+      - /home/arduino/ArduinoApps:/home/arduino/ArduinoApps

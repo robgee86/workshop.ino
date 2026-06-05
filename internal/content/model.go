@@ -14,6 +14,7 @@ const (
 type Workshop struct {
 	Title    string
 	Subtitle string
+	App      string // default target Arduino app a step's solution is applied to
 	Sections []*Section
 }
 
@@ -32,6 +33,7 @@ type Step struct {
 	Path        string // stable URL id, e.g. "01-setup/02-wiring"
 	FilePath    string // absolute path to the .md on disk
 	Kind        SectionKind
+	App         string // resolved target app: step override, else workshop default
 	Attachments []Attachment
 	Patches     []Attachment
 	Links       []Link

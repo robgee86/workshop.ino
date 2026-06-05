@@ -1,6 +1,8 @@
-// Command workshop.ino serves a Markdown-authored workshop lab handbook over the
-// local network. Content lives on disk and is read per request, so instructors
-// can fix typos mid-workshop without rebuilding or restarting.
+// Command workshop.ino serves a Markdown-authored workshop lab handbook. It runs
+// on the participant's own device: the handbook is opened in a browser there,
+// and applying a step's "solution" writes to the Arduino app living on that same
+// device. Content is read from disk per request, so authors can fix typos
+// mid-workshop without rebuilding or restarting.
 package main
 
 import (
@@ -18,6 +20,7 @@ import (
 func main() {
 	contentDir := flag.String("content", "./content", "path to the workshop content directory")
 	addr := flag.String("addr", ":8080", "address to listen on")
+	appsDir := flag.String("apps", "/home/arduino/ArduinoApps", "directory holding the Arduino apps a step's solution is applied to")
 	flag.Parse()
 
 	root, err := filepath.Abs(*contentDir)
@@ -28,7 +31,7 @@ func main() {
 		log.Fatalf("content directory not found: %s", root)
 	}
 
-	handler, err := server.New(root)
+	handler, err := server.New(root, *appsDir)
 	if err != nil {
 		log.Fatalf("starting server: %v", err)
 	}
@@ -39,8 +42,8 @@ func main() {
 	}
 }
 
-// printURLs lists the addresses participants can use to reach the handbook,
-// including LAN IPs so they can connect from their own laptops.
+// printURLs lists the addresses the handbook is reachable at: localhost on the
+// device itself, plus any LAN IPs (handy for reaching it while authoring).
 func printURLs(addr, root string) {
 	_, port, err := net.SplitHostPort(addr)
 	if err != nil || port == "" {

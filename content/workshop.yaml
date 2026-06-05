@@ -1,2 +1,5 @@
 title: Arduino Blink Workshop
 subtitle: From zero to a blinking LED
+# The default Arduino app that will be worked on as part of the workshop.
+# A step can override this with its own `app: ` in frontmatter.
+app: blink

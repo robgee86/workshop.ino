@@ -14,27 +14,36 @@ how to clone, build and run the tool itself, see [README.md](README.md).
 - [Attachments](#attachments)
 - [Links — the "References" section](#links--the-references-section)
 - [Patches — the "Code changes" section](#patches--the-code-changes-section)
+- [Applying changes on the device](#applying-changes-on-the-device)
 - [Live editing](#live-editing)
 - [From an event agenda to a workshop](#from-an-event-agenda-to-a-workshop)
 
 A complete worked example lives in [content/](content/) — a small Arduino "blink an LED" workshop that exercises every feature (intro, two milestones, multi side-quest, outro with its own side quest, Mermaid, code blocks with copy, inline SVG, attachments, and a patch). Copy it as a template.
 
 
-## How a participant uses it
+workshop.ino runs on the participant's own device — an ARM64 SBC such as the
+**Arduino Uno Q** or **Ventuno Q** — and the participant opens the handbook in a
+browser there. Applying a step's **solution** acts on the Arduino app living on that
+device (under `/home/arduino/ArduinoApps`), so a click in the browser actually changes
+the code the participant is building.
 
-- Opens the LAN URL → lands on the **workshop overview** (Intro → milestones → Outro), with a completion tick on each step they've already visited.
+- Opens the URL → lands on the **workshop overview** (Intro → milestones → Outro), with a completion tick on each step they've already visited.
 - Clicks a step. The **progress bar** in the header tracks milestone checkpoints (purely client-side, in `localStorage`).
 - **← / →** keys move between steps (Up/Down are left alone for scrolling).
 - Per-step affordances:
   - Code blocks have a **Copy** button on hover.
   - **◇ Side quests** are optional detours linked at the bottom of the step.
-  - **Code changes** is a collapsible section that, once expanded, shows a
-    pretty-printed diff per file with a per-file **Copy** that yields the new code only (no `+`/`-` markers, no line numbers).
-  - **Attachments** are downloadable files (starter sketches, solutions, images, ...).
+  - **Code changes** is a collapsible section showing a pretty-printed diff per file —
+    *what to edit* between steps, for participants who want to make the changes
+    themselves. Clicking a file name downloads the raw `.patch`. (Display only; there
+    is no apply button here.)
+  - **Attachments** are downloadable files. One flagged as a **solution** also gets an
+    **Apply** button — the easy path — that replaces the whole app folder with the
+    archive's contents (clicking its name still just downloads it).
   - **References** is a list of external links for further reading; external URLs open in a new tab.
 - A **Reset progress** button on the overview clears their `localStorage`.
 
-Everything is served locally, so the whole workshop works offline once the laptop is on the same network as the instructor's machine.
+Everything is served and applied on the device itself, so the whole workshop works fully offline.
 
 
 ## The `content/` folder — the authoring contract
@@ -87,9 +96,12 @@ Optional, at the root of `content/`:
 ```yaml
 title: Arduino Blink Workshop
 subtitle: From zero to a blinking LED
+app: blink          # default Arduino app a step's solution is applied to
 ```
 
-If absent, the workshop title falls back to the folder name.
+If absent, the workshop title falls back to the folder name. `app` names the folder
+under `/home/arduino/ArduinoApps` that a step's solution replaces; a step can override
+it (see the frontmatter table below and [Applying changes on the device](#applying-changes-on-the-device)).
 
 
 ## Writing a step (`.md`)
@@ -102,10 +114,14 @@ Every step is plain **GitHub-flavored Markdown** with an optional YAML frontmatt
 ---
 title: Wire the LED
 summary: Build the circuit on a breadboard.
+app: blink                       # overrides the workshop-level app for this step
 attachments:
   - path: ./blink-starter.ino
     label: Starter sketch
     description: The empty sketch you'll fill in.
+  - path: ./blink-solution.zip
+    label: Solution
+    solution: true               # adds an "Apply" button (see Attachments)
   - path: ../assets/wiring.svg
     label: Wiring diagram (SVG)
 patches:
@@ -125,7 +141,8 @@ All keys are optional:
 |---------------|------------------------------------------------------------------------------|
 | `title`       | Header title. Falls back to the de-prefixed filename ("Wire The Led").       |
 | `summary`     | One-liner shown on the overview card.                                        |
-| `attachments` | Downloadable files. Rendered at the bottom of the step. See [Attachments](#attachments). |
+| `app`         | Arduino app this step's solution is applied to; overrides the workshop-level `app`. See [Applying changes on the device](#applying-changes-on-the-device). |
+| `attachments` | Downloadable files. Rendered at the bottom of the step. An entry with `solution: true` also gets an Apply button. See [Attachments](#attachments). |
 | `patches`     | `.patch` files rendered in the collapsible "Code changes" section. See [Patches](#patches--the-code-changes-section). |
 | `links`       | External references for further reading. Rendered as a "References" list. See [Links](#links--the-references-section). |
 
@@ -224,18 +241,34 @@ Use the intro to set the scene ("what you'll build today, how this handbook work
 
 ## Attachments
 
-Listed at the bottom of a step, each with a download icon, the label (falling back to the filename) and an optional description.
+Listed at the bottom of a step, each with the label (falling back to the filename) and an optional description.
 
 ```yaml
 attachments:
   - path: ./blink-solution.ino
     label: Solution sketch
     description: The finished blink, if you get stuck.
+  - path: ./blink-solution.zip
+    label: Solution
+    description: Apply this to jump straight to a working app.
+    solution: true
   - path: ../assets/handout.pdf
     label: Printable wiring guide
 ```
 
-Clicking an attachment downloads it. The handler refuses any path that would escape the content root.
+Clicking an attachment's **name always downloads it**. The handler refuses any path that would escape the content root.
+
+### Solutions
+
+An attachment flagged `solution: true` is an archive (`.zip` or `.tar.gz`) holding a
+whole, working app folder. In addition to downloading, it renders an **Apply** button
+that **replaces** the target app's contents with the archive (existing files are wiped
+first, then the archive is extracted). It's the easy path: a participant who doesn't
+want to follow the diffs by hand — or who fell behind — applies the solution and is
+instantly at a known-good state. Apply acts on the step's `app` (see [Applying changes
+on the device](#applying-changes-on-the-device)); without a configured app, a solution
+is download-only. Build one with, e.g., `zip -r solution.zip .` or
+`tar czf solution.tar.gz .` from inside the app folder.
 
 
 ## Links — the "References" section
@@ -276,14 +309,43 @@ What participants see:
 - A **collapsible** *Code changes* section (hidden by default) sitting just above Attachments.
 - When expanded, each file touched by the patch appears in its own card with:
   - A status badge — `modified` / `added` / `deleted` / `renamed`.
-  - The file path.
+  - The file path, which is a **download link for the raw `.patch`**.
   - **+N −M** added/removed counts.
   - The hunks, with line-numbered, color-coded add/remove lines.
-  - A **Copy** button that copies the **new-side code** of that file (context +
-    additions, deletions dropped, no `+`/`-` markers, no line numbers) — ready
-    to paste into their editor.
 
-The diff is there so participants can see exactly what changes between steps and copy the new code into their own project to follow along. A patch that touches several files renders each file separately.
+Code changes are **display only** — they show participants exactly what to edit if they
+want to make the changes by hand. There is no apply button here: applying changes is the
+job of the step's **solution** attachment (see [Solutions](#solutions)), which gets a
+participant to the same end state in one click. A patch that touches several files
+renders each file separately. (Diffs are parsed and rendered with
+[go-gitdiff](https://github.com/bluekeyes/go-gitdiff) — workshop.ino never shells out to
+apply patches.)
+
+
+## Applying changes on the device
+
+workshop.ino runs on the participant's device, so applying a **solution** operates
+directly on the Arduino app there — server-side on the SBC, even though the click comes
+from the browser.
+
+**Resolving the target app.** For any step, the app is its frontmatter `app:` if set,
+otherwise the workshop-level `app:` from `workshop.yaml`. It resolves to a folder under
+the apps root — `/home/arduino/ArduinoApps/<app>` by default, configurable with the
+`-apps` flag (handy for testing on a dev machine). The app name must be a single safe
+path segment; anything with separators or `..` is rejected.
+
+**Apply** (`POST /apply-solution`) wipes the app folder's contents and extracts the
+solution archive (`.zip` / `.tar.gz`, auto-detected; archive entries that would escape
+the folder are rejected). Extraction is pure Go — no external tools. The browser only
+sends the step path and the attachment's index; the server re-derives every filesystem
+path from the trusted content model, so a page can never point the action at an
+arbitrary file.
+
+**Requirements.** Apply reads/writes `/home/arduino/ArduinoApps`. The **native binary /
+systemd service** has that access out of the box; the sample Compose file bind-mounts the
+host folder into the container read-write, so Apply works under Docker too. Either way the
+target is confined to a single named folder under that root — the app name is validated to
+one safe path segment, so a solution can never be applied outside the apps directory.
 
 
 ## Live editing
@@ -315,7 +377,7 @@ The playbook for turning a workshop agenda into a `content/` tree:
 
 5. **Frame the workshop** with `intro/` (what we're building, what to expect, how to use the handbook) and `outro/` (next steps, links to dig deeper). An outro side quest like "More projects to try" is a nice way to send people home with something to keep playing with.
 
-6. **Carry code forward with patches.** When a step builds directly on the previous one, drop a `.patch` next to it (e.g. produced with `diff -u step2.ino step3.ino > step3.patch`) and reference it via `patches:` in the step's frontmatter. Participants get a clear "Code changes" section showing what to change since last step, plus a one-click copy of the new code.
+6. **Carry code forward with patches and solutions.** When a step builds directly on the previous one, drop a `.patch` next to it (e.g. `diff -u step2.ino step3.ino > step3.patch`) and reference it via `patches:` — participants get a "Code changes" section showing exactly what to edit. Then add a `solution: true` archive attachment (e.g. `zip -r solution.zip .` from the finished app) so anyone who'd rather skip the manual edits, or who fell behind, can **Apply** the solution and land on a working app in one click. Applying needs the workshop's `app:` set.
 
 7. **Add shared resources** under an unprefixed folder like `content/assets/` (diagrams, hand-outs, large reference files) and link to them with `../assets/…` from any step. They can be placed anywhere in the content directory, just remember to set the paths accordingly.
 

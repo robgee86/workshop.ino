@@ -135,6 +135,26 @@ func TestSplitFrontmatterLinks(t *testing.T) {
 	}
 }
 
+func TestSplitFrontmatterAppAndSolution(t *testing.T) {
+	src := []byte("---\ntitle: Step\napp: my-blink-app\nattachments:\n  - path: ./solution.zip\n    label: Solution\n    solution: true\n  - path: ./notes.pdf\n    label: Notes\n---\nbody\n")
+	fm, _, err := SplitFrontmatter(src)
+	if err != nil {
+		t.Fatalf("SplitFrontmatter error: %v", err)
+	}
+	if fm.App != "my-blink-app" {
+		t.Errorf("App = %q, want my-blink-app", fm.App)
+	}
+	if len(fm.Attachments) != 2 {
+		t.Fatalf("got %d attachments, want 2", len(fm.Attachments))
+	}
+	if !fm.Attachments[0].Solution {
+		t.Errorf("attachments[0] should be a solution")
+	}
+	if fm.Attachments[1].Solution {
+		t.Errorf("attachments[1] should not be a solution")
+	}
+}
+
 func TestSplitFrontmatterNoFrontmatter(t *testing.T) {
 	src := []byte("# Just a heading\n\nNo frontmatter here.\n")
 

@@ -45,13 +45,13 @@ func Scan(root string) (*Workshop, error) {
 	sortByPrefix(milestones)
 
 	if introDir != "" {
-		ws.addSection(scanSection(root, introDir, Intro))
+		ws.addSection(scanSection(root, introDir, Intro, ws.App))
 	}
 	for _, m := range milestones {
-		ws.addSection(scanSection(root, m, Milestone))
+		ws.addSection(scanSection(root, m, Milestone, ws.App))
 	}
 	if outroDir != "" {
-		ws.addSection(scanSection(root, outroDir, Outro))
+		ws.addSection(scanSection(root, outroDir, Outro, ws.App))
 	}
 	return ws, nil
 }
@@ -72,16 +72,18 @@ func loadWorkshopMeta(root string, ws *Workshop) {
 	var meta struct {
 		Title    string `yaml:"title"`
 		Subtitle string `yaml:"subtitle"`
+		App      string `yaml:"app"`
 	}
 	if yaml.Unmarshal(data, &meta) == nil {
 		if meta.Title != "" {
 			ws.Title = meta.Title
 		}
 		ws.Subtitle = meta.Subtitle
+		ws.App = meta.App
 	}
 }
 
-func scanSection(root, dir string, kind SectionKind) *Section {
+func scanSection(root, dir string, kind SectionKind, defaultApp string) *Section {
 	sec := &Section{Kind: kind, Slug: dir}
 	switch kind {
 	case Intro:
@@ -106,23 +108,28 @@ func scanSection(root, dir string, kind SectionKind) *Section {
 	sortByPrefix(stepFiles)
 
 	for _, f := range stepFiles {
-		sec.Steps = append(sec.Steps, scanStep(root, dir, f, kind))
+		sec.Steps = append(sec.Steps, scanStep(root, dir, f, kind, defaultApp))
 	}
 	return sec
 }
 
-func scanStep(root, dir, file string, kind SectionKind) *Step {
+func scanStep(root, dir, file string, kind SectionKind, defaultApp string) *Step {
 	seg := strings.TrimSuffix(file, ".md")
 	stepPath := path.Join(dir, seg)
 	abs := filepath.Join(root, dir, file)
 
 	fm, body := readDoc(abs)
+	app := defaultApp
+	if fm.App != "" {
+		app = fm.App
+	}
 	st := &Step{
 		Title:       resolveTitle(fm.Title, body, seg),
 		Summary:     fm.Summary,
 		Path:        stepPath,
 		FilePath:    abs,
 		Kind:        kind,
+		App:         app,
 		Attachments: fm.Attachments,
 		Patches:     fm.Patches,
 		Links:       fm.Links,

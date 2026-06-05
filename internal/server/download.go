@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+// errInvalidPath marks a content-relative reference that can't be resolved
+// (empty, external, or escaping the content root).
+var errInvalidPath = errors.New("invalid content path")
+
 // resolveDownload maps a content-root-relative URL path to an absolute file
 // path, guaranteeing the result stays inside root and points at a regular file.
 // It is the single chokepoint protecting against path-traversal in /dl/.

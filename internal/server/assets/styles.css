@@ -279,6 +279,18 @@ pre.mermaid { background: transparent; border: none; text-align: center; }
 .sidequests a, .attachments a, .references a { color: var(--teal-strong); text-decoration: none; font-weight: 600; }
 .sidequests a:hover, .attachments a:hover, .references a:hover { text-decoration: underline; }
 .attachment-desc { color: var(--text-muted); font-size: 0.9rem; margin-left: 6px; }
+.solution-tag {
+  margin-left: 6px;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid #b07d2b;
+  color: #b07d2b;
+  vertical-align: middle;
+}
 
 /* Download icon (arrow into tray) for the attachments section header only. */
 .attachments-label { display: inline-flex; align-items: center; gap: 6px; }
@@ -328,7 +340,28 @@ details.code-changes[open] > summary.code-changes-label { margin-bottom: 14px; }
 .changeset { margin-bottom: 16px; }
 .changeset-label { margin: 0 0 2px; font-weight: 600; }
 .changeset-desc { margin: 0 0 10px; color: var(--text-muted); font-size: 0.9rem; }
-.changeset-err { margin: 0; color: var(--danger); font-family: var(--mono); font-size: 0.8rem; }
+.changeset-err { margin: 0 0 10px; color: var(--danger); font-family: var(--mono); font-size: 0.8rem; }
+
+/* On-device action button (Apply a solution over the target app). */
+.action-btn {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--teal);
+  background: var(--teal);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 150ms ease, border-color 150ms ease, opacity 150ms ease;
+}
+.action-btn:hover { background: var(--teal-strong); border-color: var(--teal-strong); }
+.action-btn:disabled { opacity: 0.7; cursor: default; }
+.action-btn.action-ok { background: #2e7d32; border-color: #2e7d32; }
+.action-btn.action-err { background: var(--danger); border-color: var(--danger); }
+.solution-btn { margin-left: 8px; vertical-align: baseline; padding: 3px 10px; }
 
 .diff-file {
   border: 1px solid var(--border);
@@ -351,6 +384,8 @@ details.code-changes[open] > summary.code-changes-label { margin-bottom: 14px; }
 }
 .diff-file-summary::-webkit-details-marker { display: none; }
 .diff-path { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--text); }
+a.diff-path { text-decoration: none; }
+a.diff-path:hover { color: var(--teal-strong); text-decoration: underline; }
 .diff-counts { display: inline-flex; gap: 8px; white-space: nowrap; }
 .diff-add { color: #2e7d32; }
 .diff-del { color: var(--danger); }
@@ -366,17 +401,6 @@ details.code-changes[open] > summary.code-changes-label { margin-bottom: 14px; }
 .diff-status-added { color: #2e7d32; border-color: #2e7d32; }
 .diff-status-deleted { color: var(--danger); border-color: var(--danger); }
 .diff-status-renamed, .diff-status-copied { color: #b07d2b; border-color: #b07d2b; }
-.diff-copy {
-  font-family: var(--mono);
-  font-size: 0.66rem;
-  padding: 2px 9px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface-strong);
-  color: var(--text-muted);
-  cursor: pointer;
-}
-.diff-copy:hover { color: var(--teal); border-color: var(--teal); }
 
 .diff-scroll { overflow-x: auto; }
 table.diff { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.8rem; line-height: 1.5; }

@@ -17,15 +17,13 @@ import (
 	"github.com/yuin/goldmark/util"
 )
 
-// chromaStyle is the chroma syntax-highlighting theme. It uses inline styles so
-// rendered code is self-contained and needs no extra stylesheet (offline-safe).
+// chromaStyle uses inline styles, so highlighted code needs no extra stylesheet.
 const chromaStyle = "github"
 
-// Render converts a Markdown body (frontmatter already stripped) to HTML.
-// baseDir is the document's directory relative to the content root; it is used
-// to rewrite relative image paths to /dl/ download URLs. Fenced "mermaid"
-// blocks pass through as <pre class="mermaid"> for client-side rendering; other
-// code blocks are highlighted server-side.
+// Render converts a Markdown body (frontmatter already stripped) to HTML, with
+// relative image paths rewritten to /dl/ URLs (resolved against baseDir, the
+// document's dir relative to the content root). Fenced "mermaid" blocks pass
+// through for client-side rendering; other code is highlighted server-side.
 func Render(body []byte, baseDir string) (template.HTML, error) {
 	md := goldmark.New(
 		goldmark.WithExtensions(extension.GFM),
@@ -45,9 +43,8 @@ func Render(body []byte, baseDir string) (template.HTML, error) {
 	return template.HTML(buf.String()), nil
 }
 
-// ResolveRel resolves a relative reference (from frontmatter or Markdown) against
-// baseDir into a clean, content-root-relative slash path. It returns ok=false for
-// empty, external (scheme/protocol-relative/data), or root-escaping references.
+// ResolveRel resolves rel against baseDir into a clean content-root-relative
+// path. ok is false for empty, external, or root-escaping references.
 func ResolveRel(baseDir, rel string) (string, bool) {
 	if rel == "" {
 		return "", false
@@ -97,7 +94,7 @@ func (r *codeRenderer) renderFenced(w util.BufWriter, source []byte, node ast.No
 	lang := ""
 	if n.Info != nil {
 		if fields := strings.Fields(string(n.Info.Segment.Value(source))); len(fields) > 0 {
-			lang = fields[0] // first token of the info string, e.g. "c" in "c title=x"
+			lang = fields[0] // "c" in "c title=x"
 		}
 	}
 	return r.writeCode(w, lang, blockText(source, n))
@@ -120,9 +117,8 @@ func (r *codeRenderer) writeCode(w util.BufWriter, lang string, code []byte) (as
 	w.WriteString(`<div class="code-block" data-lang="`)
 	w.WriteString(template.HTMLEscapeString(lang))
 	w.WriteString(`">`)
-	// quick.Highlight falls back to a plaintext lexer for unknown/empty langs.
+	// Highlight falls back to plaintext for unknown langs; on error, plain <pre>.
 	if err := quick.Highlight(w, string(code), lang, "html", chromaStyle); err != nil {
-		// Degrade gracefully to an escaped preformatted block.
 		w.WriteString("<pre>")
 		template.HTMLEscape(w, code)
 		w.WriteString("</pre>")

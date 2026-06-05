@@ -18,18 +18,21 @@
     {{if .Changes}}
     <details class="code-changes">
       <summary class="code-changes-label">Code changes</summary>
-      {{range .Changes}}
+      {{range $cs := .Changes}}
       <div class="changeset">
-        {{if .Label}}<p class="changeset-label">{{.Label}}</p>{{end}}
-        {{if .Description}}<p class="changeset-desc">{{.Description}}</p>{{end}}
-        {{if .Err}}<p class="changeset-err">⚠ {{.Err}}</p>{{end}}
-        {{range .Files}}
+        {{if $cs.Label}}<p class="changeset-label">{{$cs.Label}}</p>{{end}}
+        {{if $cs.Description}}<p class="changeset-desc">{{$cs.Description}}</p>{{end}}
+        {{if $cs.Err}}<p class="changeset-err">⚠ {{$cs.Err}}</p>{{end}}
+        {{range $cs.Files}}
         <details class="diff-file" open>
           <summary class="diff-file-summary">
             <span class="diff-status diff-status-{{.Status}}">{{.Status}}</span>
+            {{if $cs.PatchURL}}
+            <a class="diff-path" href="{{$cs.PatchURL}}" download title="Download the .patch">{{if and (eq .Status "renamed") .OldPath}}{{.OldPath}} → {{end}}{{.Path}}</a>
+            {{else}}
             <span class="diff-path">{{if and (eq .Status "renamed") .OldPath}}{{.OldPath}} → {{end}}{{.Path}}</span>
+            {{end}}
             <span class="diff-counts"><span class="diff-add">+{{.Additions}}</span> <span class="diff-del">−{{.Deletions}}</span></span>
-            <button type="button" class="diff-copy">Copy</button>
           </summary>
           {{if .Binary}}
           <p class="diff-binary">Binary file — not shown.</p>
@@ -63,7 +66,11 @@
         {{range .Attachments}}
         <li>
           <a href="{{.URL}}" download>{{.Label}}</a>
+          {{if .Solution}}<span class="solution-tag">solution</span>{{end}}
           {{if .Description}}<span class="attachment-desc">— {{.Description}}</span>{{end}}
+          {{if .CanApply}}
+          <button type="button" class="action-btn solution-btn" data-step="{{.StepPath}}" data-index="{{.Index}}">Apply</button>
+          {{end}}
         </li>
         {{end}}
       </ul>

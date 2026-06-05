@@ -16,16 +16,20 @@ var templatesFS embed.FS
 //go:embed assets
 var assetsFS embed.FS
 
-// Server serves a single workshop rooted at contentRoot.
+// Server serves a single workshop rooted at contentRoot. It also applies a
+// step's "solution" archive onto the matching Arduino app under appsRoot.
 type Server struct {
 	contentRoot string
+	appsRoot    string
 	index       *template.Template
 	step        *template.Template
 	sideQuest   *template.Template
 }
 
-// New builds an HTTP handler serving the workshop at contentRoot.
-func New(contentRoot string) (http.Handler, error) {
+// New builds an HTTP handler serving the workshop at contentRoot. appsRoot is
+// the directory holding the Arduino apps that a solution is applied to
+// (typically /home/arduino/ArduinoApps).
+func New(contentRoot, appsRoot string) (http.Handler, error) {
 	page := func(name string) (*template.Template, error) {
 		return template.New("layout").ParseFS(templatesFS, "templates/layout.html", "templates/"+name)
 	}
@@ -42,13 +46,14 @@ func New(contentRoot string) (http.Handler, error) {
 		return nil, err
 	}
 
-	s := &Server{contentRoot: contentRoot, index: idx, step: stp, sideQuest: sq}
+	s := &Server{contentRoot: contentRoot, appsRoot: appsRoot, index: idx, step: stp, sideQuest: sq}
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /{$}", s.handleIndex)
 	mux.HandleFunc("GET /s/{path...}", s.handleStep)
 	mux.HandleFunc("GET /q/{path...}", s.handleSideQuest)
 	mux.HandleFunc("GET /dl/{path...}", s.handleDownload)
+	mux.HandleFunc("POST /apply-solution", s.handleApplySolution)
 
 	static, err := fs.Sub(assetsFS, "assets")
 	if err != nil {

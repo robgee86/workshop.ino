@@ -78,24 +78,65 @@
       block.appendChild(btn);
     });
 
-    // Per-file "Copy" on diffs: copy the new-side code (context + additions,
-    // deletions dropped, no +/- markers or line numbers) for easy pasting.
-    document.querySelectorAll(".diff-file").forEach(function (file) {
-      var btn = file.querySelector(".diff-copy");
-      if (!btn) return;
-      btn.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation(); // don't toggle the <details>
-        var lines = [];
-        file.querySelectorAll("tr.diff-line:not(.del) .diff-code").forEach(function (c) {
-          lines.push(c.textContent);
-        });
-        navigator.clipboard.writeText(lines.join("\n")).then(function () {
-          btn.textContent = "Copied!";
+    function postAction(btn, url, opts) {
+      if (opts.confirm && !window.confirm(opts.confirm)) return;
+      var payload = {
+        step: btn.getAttribute("data-step"),
+        index: parseInt(btn.getAttribute("data-index"), 10),
+      };
+      var original = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = opts.busy;
+      fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+        .then(function (r) {
+          return r.json().then(function (j) {
+            return { ok: r.ok && j.ok, error: j.error };
+          });
+        })
+        .then(function (res) {
+          if (res.ok) {
+            btn.textContent = opts.done;
+            btn.classList.add("action-ok");
+          } else {
+            btn.textContent = "Failed";
+            btn.classList.add("action-err");
+            window.alert(opts.label + " failed:\n\n" + (res.error || "unknown error"));
+          }
+        })
+        .catch(function (e) {
+          btn.textContent = "Failed";
+          btn.classList.add("action-err");
+          window.alert(opts.label + " failed:\n\n" + e);
+        })
+        .then(function () {
           setTimeout(function () {
-            btn.textContent = "Copy";
-          }, 1200);
+            btn.disabled = false;
+            btn.textContent = original;
+            btn.classList.remove("action-ok", "action-err");
+          }, 2500);
         });
+    }
+
+    document.querySelectorAll(".solution-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        postAction(btn, "/apply-solution", {
+          busy: "Applying…",
+          done: "Applied!",
+          label: "Apply solution",
+          confirm:
+            "Apply the solution? It replaces the current files in the app folder.",
+        });
+      });
+    });
+
+    // Clicking a diff file name downloads the .patch; don't also toggle the card.
+    document.querySelectorAll(".diff-path").forEach(function (a) {
+      a.addEventListener("click", function (e) {
+        e.stopPropagation();
       });
     });
 

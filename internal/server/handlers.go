@@ -29,6 +29,10 @@ type linkView struct {
 
 type attachmentView struct {
 	Label, Description, URL string
+	Solution                bool   // a whole-app archive that can be applied
+	CanApply                bool   // Solution AND a target app is configured
+	StepPath                string // identifies this step to the apply-solution endpoint
+	Index                   int    // index into the step's attachments
 }
 
 // referenceView is an external reference rendered in the "References" section.
@@ -63,6 +67,7 @@ type changeSet struct {
 	Description string
 	Files       []content.DiffFile
 	Err         string
+	PatchURL    string // /dl/ link — clicking a file name downloads the .patch
 }
 
 type stepData struct {
@@ -143,7 +148,7 @@ func (s *Server) handleStep(w http.ResponseWriter, r *http.Request) {
 		Body:     body,
 	}
 	data.HasMermaid = hasMermaid(body)
-	for _, a := range step.Attachments {
+	for i, a := range step.Attachments {
 		url := a.Path
 		if resolved, ok := content.ResolveRel(baseDir, a.Path); ok {
 			url = "/dl/" + resolved
@@ -152,10 +157,22 @@ func (s *Server) handleStep(w http.ResponseWriter, r *http.Request) {
 		if label == "" {
 			label = path.Base(a.Path)
 		}
-		data.Attachments = append(data.Attachments, attachmentView{Label: label, Description: a.Description, URL: url})
+		data.Attachments = append(data.Attachments, attachmentView{
+			Label:       label,
+			Description: a.Description,
+			URL:         url,
+			Solution:    a.Solution,
+			CanApply:    a.Solution && step.App != "",
+			StepPath:    step.Path,
+			Index:       i,
+		})
 	}
 	for _, pt := range step.Patches {
-		data.Changes = append(data.Changes, s.buildChangeSet(baseDir, pt))
+		cs := s.buildChangeSet(baseDir, pt)
+		if resolved, ok := content.ResolveRel(baseDir, pt.Path); ok {
+			cs.PatchURL = "/dl/" + resolved
+		}
+		data.Changes = append(data.Changes, cs)
 	}
 	for _, l := range step.Links {
 		label := l.Label
@@ -232,10 +249,8 @@ func (s *Server) handleDownload(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, abs)
 }
 
-// renderFile reads a Markdown file, strips frontmatter, and renders the body,
-// resolving relative image links against the file's directory.
-// buildChangeSet resolves, reads, and parses a referenced .patch. Any failure is
-// returned as a non-fatal note on the change set so the page still renders.
+// buildChangeSet resolves, reads, and parses a referenced .patch. Failures
+// become a non-fatal note on the change set, so the page still renders.
 func (s *Server) buildChangeSet(baseDir string, pt content.Attachment) changeSet {
 	cs := changeSet{Label: pt.Label, Description: pt.Description}
 	resolved, ok := content.ResolveRel(baseDir, pt.Path)
@@ -344,8 +359,7 @@ func hasMermaid(html template.HTML) bool {
 	return strings.Contains(string(html), `<pre class="mermaid">`)
 }
 
-// isExternalURL reports whether a reference URL points off-site and should
-// therefore open in a new tab. Internal links (relative paths) stay in-tab.
+// isExternalURL reports whether u points off-site, so the link opens in a new tab.
 func isExternalURL(u string) bool {
 	return strings.HasPrefix(u, "http://") ||
 		strings.HasPrefix(u, "https://") ||

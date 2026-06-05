@@ -180,6 +180,36 @@ func TestScanSideQuestsForIntroAndOutro(t *testing.T) {
 	}
 }
 
+func TestScanAppResolution(t *testing.T) {
+	root := t.TempDir()
+	write := func(rel, body string) {
+		p := filepath.Join(root, rel)
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("workshop.yaml", "title: T\napp: default-app\n")
+	write("01-m/01-default.md", "---\ntitle: Uses Default\n---\nbody\n")
+	write("01-m/02-override.md", "---\ntitle: Overrides\napp: special-app\n---\nbody\n")
+
+	ws, err := Scan(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ws.App != "default-app" {
+		t.Errorf("workshop App = %q, want default-app", ws.App)
+	}
+	if got := ws.FindStep("01-m/01-default"); got == nil || got.App != "default-app" {
+		t.Errorf("step without override should inherit default-app, got %+v", got)
+	}
+	if got := ws.FindStep("01-m/02-override"); got == nil || got.App != "special-app" {
+		t.Errorf("step with override should use special-app, got %+v", got)
+	}
+}
+
 func TestScanCheckpointsExcludeExtras(t *testing.T) {
 	ws, err := Scan(buildFixture(t))
 	if err != nil {
