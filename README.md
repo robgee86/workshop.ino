@@ -44,7 +44,7 @@ go build -o workshop.ino .
 |------------|------------------------------|-------------------------------------------------------|
 | `-content` | `./content`                  | Path to your workshop folder (resolved against CWD).  |
 | `-addr`    | `:8080`                      | Address to listen on (`:9000`, `127.0.0.1:8080`, …).  |
-| `-apps`    | `~/ArduinoApps`              | Directory holding the Arduino apps a step's solution is applied to. Resolves to `$HOME/ArduinoApps`, falling back to `/home/arduino/ArduinoApps` when `$HOME` is unset (e.g. in the container). Point it at a scratch dir when testing on a dev machine. |
+| `-apps`    | `~/ArduinoApps`              | Directory holding the Arduino apps a step's solution is applied to. Resolves to `$HOME/ArduinoApps` (falling back to `/home/arduino/ArduinoApps` if `$HOME` can't be resolved). Point it at a scratch dir when testing on a dev machine. |
 
 `-content` is resolved against the current working directory, not the binary's location — `cd` into the folder that holds `content/` before running.
 
@@ -90,7 +90,7 @@ sudo systemctl enable --now workshop.ino
 2. Put a `content/` folder next to it.
 3. `docker compose up -d`.
 
-The handbook is then on `http://<board-ip>:8080/` (host `:8080` → container `:8080`, so it runs fine without root or a `sysctl` tweak — including under rootless Docker). The image is pulled from GHCR — refresh with `docker compose pull && docker compose up -d`. The Compose file mounts `/home/arduino/ArduinoApps` read-write so Apply works; for applied files to be owned by the arduino user rather than root, run the container as that user (see the comment in the file).
+The handbook is then on `http://<board-ip>:8080/` (host `:8080` → container `:8080`, so it runs fine without root or a `sysctl` tweak — including under rootless Docker). The image is pulled from GHCR — refresh with `docker compose pull && docker compose up -d`. The Compose file mounts the host's `/home/arduino/ArduinoApps` read-write at the container's `/apps`, where the image is configured to apply solutions (`-apps /apps`). Applied files are owned by the uid:gid the container runs as, defaulting to the device's arduino user (`1000:1000`). To instead match whoever launches Compose, pass their ids — `HOST_UID="$(id -u)" HOST_GID="$(id -g)" docker compose up -d`. The mounted apps dir must be writable by that uid.
 
 ---
 
