@@ -164,6 +164,71 @@ func TestRestoreArchiveTarGz(t *testing.T) {
 	assertRestored(t, appDir)
 }
 
+// TestRestoreArchiveStripsWrapperDir proves an archive whose entries all live
+// under one top-level folder is unwrapped: the files land directly in appDir,
+// not in appDir/<wrapper>.
+func TestRestoreArchiveStripsWrapperDir(t *testing.T) {
+	cases := []struct {
+		name string
+		make func(*testing.T, string, map[string]string)
+		ext  string
+	}{
+		{"zip", makeZip, ".zip"},
+		{"tar.gz", makeTarGz, ".tar.gz"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			appDir := t.TempDir()
+			seedStale(t, appDir)
+			archive := filepath.Join(t.TempDir(), "snap"+tc.ext)
+			tc.make(t, archive, map[string]string{
+				"rss-reader/blink.ino":    "new code\n",
+				"rss-reader/lib/helper.h": "header\n",
+			})
+			if err := RestoreArchive(appDir, archive); err != nil {
+				t.Fatalf("RestoreArchive error: %v", err)
+			}
+			assertRestored(t, appDir)
+			if _, err := os.Stat(filepath.Join(appDir, "rss-reader")); !os.IsNotExist(err) {
+				t.Errorf("wrapper dir rss-reader/ should be stripped, not nested under appDir")
+			}
+		})
+	}
+}
+
+// TestRestoreArchiveKeepsMultipleTopLevel proves an archive with more than one
+// top-level entry is left as-is (no wrapper to strip).
+func TestRestoreArchiveKeepsMultipleTopLevel(t *testing.T) {
+	appDir := t.TempDir()
+	archive := filepath.Join(t.TempDir(), "snap.zip")
+	makeZip(t, archive, map[string]string{"a/x.txt": "1\n", "b/y.txt": "2\n"})
+	if err := RestoreArchive(appDir, archive); err != nil {
+		t.Fatalf("RestoreArchive error: %v", err)
+	}
+	for _, p := range []string{"a/x.txt", "b/y.txt"} {
+		if _, err := os.Stat(filepath.Join(appDir, filepath.FromSlash(p))); err != nil {
+			t.Errorf("expected %s to be extracted at root: %v", p, err)
+		}
+	}
+}
+
+// TestRestoreArchiveRejectsEscapeUnderWrapper proves stripping the wrapper can't
+// be abused to escape: safeJoin still validates every stripped path.
+func TestRestoreArchiveRejectsEscapeUnderWrapper(t *testing.T) {
+	appDir := t.TempDir()
+	archive := filepath.Join(t.TempDir(), "evil.zip")
+	makeZip(t, archive, map[string]string{
+		"app/keep.txt":         "ok\n",
+		"app/../../escape.txt": "pwned\n",
+	})
+	if err := RestoreArchive(appDir, archive); err == nil {
+		t.Fatal("RestoreArchive should reject an entry that escapes after wrapper stripping")
+	}
+	if _, err := os.Stat(filepath.Join(filepath.Dir(appDir), "escape.txt")); !os.IsNotExist(err) {
+		t.Errorf("escape wrote a file outside the app dir")
+	}
+}
+
 func TestRestoreArchiveRejectsZipSlip(t *testing.T) {
 	appDir := t.TempDir()
 	archive := filepath.Join(t.TempDir(), "evil.zip")

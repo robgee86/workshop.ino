@@ -337,10 +337,14 @@ path segment; anything with separators or `..` is rejected.
 
 **Apply** (`POST /apply-solution`) wipes the app folder's contents and extracts the
 solution archive (`.zip` / `.tar.gz`, auto-detected; archive entries that would escape
-the folder are rejected). Extraction is pure Go — no external tools. The browser only
-sends the step path and the attachment's index; the server re-derives every filesystem
-path from the trusted content model, so a page can never point the action at an
-arbitrary file.
+the folder are rejected). The app folder is created if it doesn't exist yet, so the
+first apply can bootstrap a brand-new app. If every entry in the archive sits under a
+single top-level folder (e.g. you zipped `rss-reader/` rather than its contents), that
+wrapper is stripped so the files land directly in the app folder instead of nesting a
+second `rss-reader/` inside it — pack it whichever way is convenient. Extraction is pure
+Go — no external tools. The browser only sends the step path and the attachment's index;
+the server re-derives every filesystem path from the trusted content model, so a page can
+never point the action at an arbitrary file.
 
 **Requirements.** Apply reads/writes the apps root (`~/ArduinoApps`, or `/home/arduino/ArduinoApps`
 on the device / under Docker). The **native binary /
