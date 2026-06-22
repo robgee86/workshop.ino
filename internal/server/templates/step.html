@@ -62,12 +62,16 @@
     {{if .Attachments}}
     <div class="attachments">
       <p class="attachments-label">Attachments</p>
-      <ul>
+      <ul class="attachment-list">
         {{range .Attachments}}
-        <li>
-          <a href="{{.URL}}" download>{{.Label}}</a>
-          {{if .Solution}}<span class="solution-tag">solution</span>{{end}}
-          {{if .Description}}<span class="attachment-desc">— {{.Description}}</span>{{end}}
+        <li class="attachment{{if .CanApply}} is-applicable{{end}}">
+          <div class="attachment-info">
+            <span class="attachment-head">
+              <a class="attachment-name" href="{{.URL}}" download>{{.Label}}</a>
+              {{if .Solution}}<span class="solution-tag">solution</span>{{end}}
+            </span>
+            {{if .Description}}<span class="attachment-desc">{{.Description}}</span>{{end}}
+          </div>
           {{if .CanApply}}
           <button type="button" class="action-btn solution-btn" data-step="{{.StepPath}}" data-index="{{.Index}}">Apply</button>
           {{end}}

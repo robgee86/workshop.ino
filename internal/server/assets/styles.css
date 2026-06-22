@@ -272,13 +272,50 @@ pre.mermaid { background: transparent; border: none; text-align: center; }
   letter-spacing: 0.08em;
   color: var(--text-muted);
 }
-/* Bulleted item lists: side quests, attachments, and references. */
-.sidequests ul, .attachments ul, .references ul { list-style: disc; margin: 0; padding-left: 1.6em; }
-.sidequests li, .attachments li, .references li { margin: 4px 0; }
-.sidequests li::marker, .attachments li::marker, .references li::marker { color: var(--text-muted); }
+/* Bulleted item lists: side quests and references. Attachments render as cards. */
+.sidequests ul, .references ul { list-style: disc; margin: 0; padding-left: 1.6em; }
+.sidequests li, .references li { margin: 4px 0; }
+.sidequests li::marker, .references li::marker { color: var(--text-muted); }
 .sidequests a, .attachments a, .references a { color: var(--teal-strong); text-decoration: none; font-weight: 600; }
 .sidequests a:hover, .attachments a:hover, .references a:hover { text-decoration: underline; }
 .attachment-desc { color: var(--text-muted); font-size: 0.9rem; margin-left: 6px; }
+
+/* Attachments are cards. An applicable solution shows an Apply button on the
+   right and gets a subtle teal accent so the action reads clearly. */
+.attachment-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.attachment-list li.attachment {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 14px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.attachment-list li.is-applicable {
+  background: rgba(0, 129, 132, 0.06);
+  border-color: rgba(0, 129, 132, 0.35);
+}
+.attachment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.attachment-head { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.attachment-name { font-weight: 600; }
+.attachment-list .attachment-desc { margin: 0; }
 .solution-tag {
   margin-left: 6px;
   font-family: var(--mono);
@@ -361,7 +398,7 @@ details.code-changes[open] > summary.code-changes-label { margin-bottom: 14px; }
 .action-btn:disabled { opacity: 0.7; cursor: default; }
 .action-btn.action-ok { background: #2e7d32; border-color: #2e7d32; }
 .action-btn.action-err { background: var(--danger); border-color: var(--danger); }
-.solution-btn { margin-left: 8px; vertical-align: baseline; padding: 3px 10px; }
+.solution-btn { flex: none; padding: 7px 16px; }
 
 .diff-file {
   border: 1px solid var(--border);
