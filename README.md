@@ -42,11 +42,9 @@ go build -o workshop.ino .
 
 | Flag       | Default                      | What it does                                          |
 |------------|------------------------------|-------------------------------------------------------|
-| `-content` | `./content`                  | Path to your workshop folder (resolved against CWD).  |
 | `-addr`    | `:8080`                      | Address to listen on (`:9000`, `127.0.0.1:8080`, …).  |
+| `-content` | `./content`                  | Path to your workshop folder (resolved against CWD).  |
 | `-apps`    | `~/ArduinoApps`              | Directory holding the Arduino apps a step's solution is applied to. Resolves to `$HOME/ArduinoApps` (falling back to `/home/arduino/ArduinoApps` if `$HOME` can't be resolved). Point it at a scratch dir when testing on a dev machine. |
-
-`-content` is resolved against the current working directory, not the binary's location — `cd` into the folder that holds `content/` before running.
 
 ---
 
@@ -84,13 +82,21 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now workshop.ino
 ```
 
-### Docker container + Compose
+### Docker container + Compose (+ optional systemd)
 
-1. Copy [`deploy/docker-compose.yml`](deploy/docker-compose.yml) to the board.
-2. Put a `content/` folder next to it.
-3. `docker compose up -d`.
+1. Copy [`deploy/docker/`](deploy/docker/) (the compose file and `run-docker-compose.sh`) to the board.
+2. Put a `content/` folder next to them.
+3. `./run-docker-compose.sh` — runs in the foreground; Ctrl+C stops the stack.
 
-The handbook is then on `http://<board-ip>:8080/` (host `:8080` → container `:8080`, so it runs fine without root or a `sysctl` tweak — including under rootless Docker). The image is pulled from GHCR — refresh with `docker compose pull && docker compose up -d`. The Compose file mounts the host's `/home/arduino/ArduinoApps` read-write at the container's `/apps`, where the image is configured to apply solutions (`-apps /apps`). Applied files are owned by the uid:gid the container runs as, defaulting to the device's arduino user (`1000:1000`). To instead match whoever launches Compose, pass their ids — `HOST_UID="$(id -u)" HOST_GID="$(id -g)" docker compose up -d`. The mounted apps dir must be writable by that uid.
+The handbook is then on `http://<board-ip>:8080/`. The Compose file mounts the host's `/home/arduino/ArduinoApps` read-write at the container's `/apps`, where the image is configured to apply solutions (`-apps /apps`). Applied files are owned by the uid:gid the container runs as; `run-docker-compose.sh` passes your `HOST_UID`/`HOST_GID` so you own them (defaulting to the device's arduino user, `1000:1000`). The mounted apps dir must be writable by that uid.
+
+For a managed service that survives reboots and restarts on failure, install [`deploy/docker/workshop.ino.service`](deploy/docker/workshop.ino.service) (edit its `WorkingDirectory` to where you dropped the files):
+
+```bash
+sudo cp deploy/docker/workshop.ino.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now workshop.ino
+```
 
 ---
 

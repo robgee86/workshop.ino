@@ -1,0 +1,22 @@
+# workshop.ino — Docker Compose deployment.
+#
+# This compose file is meant to be launched by run-docker-compose.sh or by
+# systemd (workshop.ino.service).
+#
+# Usage:
+#   1. Drop your workshop's `content/` folder NEXT TO this file
+#   2. Verify the arduino apps folder exists
+#   3. `docker compose up -d`
+#   4. Visit http://<this-host-ip>:8080/.
+
+services:
+  workshop-ino:
+    image: ghcr.io/arduino/workshop.ino:latest
+    container_name: workshop.ino
+    restart: unless-stopped
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./content:/content:ro
+      - /home/arduino/ArduinoApps:/apps

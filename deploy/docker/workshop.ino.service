@@ -1,0 +1,29 @@
+# Launch workshop.ino via Docker Compose as a service.
+#
+# Install:
+#   sudo cp deploy/docker/workshop.ino.service /etc/systemd/system/
+#   printf 'HOST_UID=%s\nHOST_GID=%s\n' "$(id -u)" "$(id -g)" | sudo tee /home/arduino/workshop.ino/workshop.ino.env
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now workshop.ino
+#
+# Logs: journalctl -u workshop.ino -f
+#
+# Note: the second line captures your uid/gid so files created are owned by you.
+
+[Unit]
+Description=workshop.ino — live workshop lab handbook (Docker Compose)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/arduino/workshop.ino
+EnvironmentFile=-/home/arduino/workshop.ino/workshop.ino.env
+ExecStart=/usr/bin/docker compose up
+ExecStop=/usr/bin/docker compose down
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

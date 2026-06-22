@@ -1,7 +1,10 @@
+# Launch workshop.ino natively as a service.
+#
 # Install:
-#   sudo cp deploy/workshop.ino.service /etc/systemd/system/
+#   sudo cp deploy/systemd/workshop.ino.service /etc/systemd/system/
 #   sudo systemctl daemon-reload
 #   sudo systemctl enable --now workshop.ino
+#
 # Logs: journalctl -u workshop.ino -f
 
 [Unit]
@@ -11,8 +14,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/var/lib/workshop.ino
-ExecStart=/usr/local/bin/workshop.ino -content /var/lib/workshop.ino/content -addr :8080
+WorkingDirectory=/home/arduino/workshop.ino
+ExecStart=/home/arduino/workshop.ino/workshop.ino-linux-arm64 -content /home/arduino/content -addr :8080
 Restart=on-failure
 
 [Install]
