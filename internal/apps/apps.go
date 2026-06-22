@@ -1,6 +1,6 @@
 // Package apps resolves Arduino app directories and replaces an app's contents
-// with a "solution" archive. The apps live under a root such as
-// /home/arduino/ArduinoApps on the device running workshop.ino.
+// with a "solution" archive. The apps live under a folder such as ~/ArduinoApps
+// on the device running workshop.ino.
 package apps
 
 import (

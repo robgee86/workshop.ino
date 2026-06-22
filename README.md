@@ -2,7 +2,7 @@
 
 A live, offline-first **lab handbook** for hands-on workshops. Authors write the workshop as a folder of Markdown files; participants follow along step by step in a browser. Code blocks have copy buttons, diffs between steps are pretty-printed, Mermaid diagrams render, and progress is tracked in each participant's browser.
 
-It runs on the participant's own device — an ARM64 SBC such as the **Arduino Uno Q** or **Ventuno Q** — and applying a step's **solution** writes straight to the Arduino app on that same device (under `/home/arduino/ArduinoApps`), so a click in the browser changes the code the participant is building.
+It runs on the participant's own device — an ARM64 SBC such as the **Arduino Uno Q** or **Arduino Ventuno Q** — and applying a step's **solution** writes straight to the Arduino app on that same device (under `/home/arduino/ArduinoApps`), so a click in the browser changes the code the participant is building.
 
 > Content is read from disk on every request, so an author can fix a typo
 > mid-workshop and have the change show up on refresh.
@@ -44,7 +44,7 @@ go build -o workshop.ino .
 |------------|------------------------------|-------------------------------------------------------|
 | `-content` | `./content`                  | Path to your workshop folder (resolved against CWD).  |
 | `-addr`    | `:8080`                      | Address to listen on (`:9000`, `127.0.0.1:8080`, …).  |
-| `-apps`    | `/home/arduino/ArduinoApps`  | Directory holding the Arduino apps a step's solution is applied to. Point it at a scratch dir when testing on a dev machine. |
+| `-apps`    | `~/ArduinoApps`              | Directory holding the Arduino apps a step's solution is applied to. Resolves to `$HOME/ArduinoApps`, falling back to `/home/arduino/ArduinoApps` when `$HOME` is unset (e.g. in the container). Point it at a scratch dir when testing on a dev machine. |
 
 `-content` is resolved against the current working directory, not the binary's location — `cd` into the folder that holds `content/` before running.
 
@@ -54,7 +54,7 @@ go build -o workshop.ino .
 
 workshop.ino is meant to run **on the participant's device** (the SBC). Two ways to install it:
 
-> **Applying a solution needs write access to the apps folder** (`/home/arduino/ArduinoApps`; extraction is pure Go — no external tools). The native binary has it out of the box; the sample Compose file bind-mounts that host folder into the container read-write. Both paths support Apply.
+> **Applying a solution needs write access to the apps folder** (`/home/arduino/ArduinoApps`). The native binary has everything out of the box, whereas the sample Compose file bind-mounts that host folder into the container read-write.
 
 ### Native binary (+ optional systemd)
 
@@ -63,8 +63,8 @@ workshop.ino is meant to run **on the participant's device** (the SBC). Two ways
 
    ```
    anywhere/
-     workshop.ino-linux-arm64    (the binary; rename to `workshop.ino` if you like)
-     content/                   (your workshop)
+     workshop.ino-linux-arm64    (the binary, rename if you like)
+     content/                    (your workshop contents)
    ```
 
 3. Run it:
@@ -91,8 +91,6 @@ sudo systemctl enable --now workshop.ino
 3. `docker compose up -d`.
 
 The handbook is then on `http://<board-ip>:8080/` (host `:8080` → container `:8080`, so it runs fine without root or a `sysctl` tweak — including under rootless Docker). The image is pulled from GHCR — refresh with `docker compose pull && docker compose up -d`. The Compose file mounts `/home/arduino/ArduinoApps` read-write so Apply works; for applied files to be owned by the arduino user rather than root, run the container as that user (see the comment in the file).
-
-Both paths use the same arm64 artifacts published by the release workflow ([`.github/workflows/release.yml`](.github/workflows/release.yml)) on every `v*` tag.
 
 ---
 

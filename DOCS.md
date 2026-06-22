@@ -100,7 +100,7 @@ app: blink          # default Arduino app a step's solution is applied to
 ```
 
 If absent, the workshop title falls back to the folder name. `app` names the folder
-under `/home/arduino/ArduinoApps` that a step's solution replaces; a step can override
+under the apps root (`~/ArduinoApps` by default) that a step's solution replaces; a step can override
 it (see the frontmatter table below and [Applying changes on the device](#applying-changes-on-the-device)).
 
 
@@ -330,7 +330,8 @@ from the browser.
 
 **Resolving the target app.** For any step, the app is its frontmatter `app:` if set,
 otherwise the workshop-level `app:` from `workshop.yaml`. It resolves to a folder under
-the apps root — `/home/arduino/ArduinoApps/<app>` by default, configurable with the
+the apps root — `~/ArduinoApps/<app>` by default (`$HOME/ArduinoApps`, falling back to
+`/home/arduino/ArduinoApps` when `$HOME` is unset), configurable with the
 `-apps` flag (handy for testing on a dev machine). The app name must be a single safe
 path segment; anything with separators or `..` is rejected.
 
@@ -341,7 +342,8 @@ sends the step path and the attachment's index; the server re-derives every file
 path from the trusted content model, so a page can never point the action at an
 arbitrary file.
 
-**Requirements.** Apply reads/writes `/home/arduino/ArduinoApps`. The **native binary /
+**Requirements.** Apply reads/writes the apps root (`~/ArduinoApps`, or `/home/arduino/ArduinoApps`
+on the device / under Docker). The **native binary /
 systemd service** has that access out of the box; the sample Compose file bind-mounts the
 host folder into the container read-write, so Apply works under Docker too. Either way the
 target is confined to a single named folder under that root — the app name is validated to

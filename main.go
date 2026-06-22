@@ -20,7 +20,7 @@ import (
 func main() {
 	contentDir := flag.String("content", "./content", "path to the workshop content directory")
 	addr := flag.String("addr", ":8080", "address to listen on")
-	appsDir := flag.String("apps", "/home/arduino/ArduinoApps", "directory holding the Arduino apps a step's solution is applied to")
+	appsDir := flag.String("apps", defaultAppsDir(), "directory holding the Arduino apps a step's solution is applied to (default ~/ArduinoApps)")
 	flag.Parse()
 
 	root, err := filepath.Abs(*contentDir)
@@ -40,6 +40,16 @@ func main() {
 	if err := http.ListenAndServe(*addr, handler); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// defaultAppsDir is ~/ArduinoApps when a home directory can be resolved, falling
+// back to /home/arduino/ArduinoApps otherwise. This fallback keeps the device
+// and the Docker image behaving the same.
+func defaultAppsDir() string {
+	if home, err := os.UserHomeDir(); err == nil && home != "" {
+		return filepath.Join(home, "ArduinoApps")
+	}
+	return "/home/arduino/ArduinoApps"
 }
 
 // printURLs lists the addresses the handbook is reachable at: localhost on the
