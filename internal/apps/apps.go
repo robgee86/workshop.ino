@@ -28,10 +28,17 @@ func Dir(root, name string) (string, error) {
 	return filepath.Join(root, name), nil
 }
 
+// preservedEntries are top-level names inside an app folder that a restore keeps
+// instead of wiping.
+var preservedEntries = map[string]bool{
+	".cache": true,
+}
+
 // RestoreArchive clears appDir and extracts archive into it, replacing the app
-// with the archive's contents. appDir is created if it doesn't exist yet. The
-// archive type is detected by extension (.zip, .tar.gz/.tgz). Entries that
-// would escape appDir are rejected.
+// with the archive's contents. appDir is created if it doesn't exist yet, and
+// the entries in preservedEntries (e.g. .cache) are left untouched. The archive
+// type is detected by extension (.zip, .tar.gz/.tgz). Entries that would escape
+// appDir are rejected.
 func RestoreArchive(appDir, archive string) error {
 	if err := os.MkdirAll(appDir, 0o755); err != nil {
 		return err
@@ -53,13 +60,17 @@ func RestoreArchive(appDir, archive string) error {
 }
 
 // clearDir removes everything inside dir but keeps dir itself (preserving its
-// ownership and mode — important when it's owned by the arduino user).
+// ownership and mode) and skips any preservedEntries (e.g. .cache) so
+// device-local state survives a restore.
 func clearDir(dir string) error {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return err
 	}
 	for _, e := range entries {
+		if preservedEntries[e.Name()] {
+			continue
+		}
 		if err := os.RemoveAll(filepath.Join(dir, e.Name())); err != nil {
 			return err
 		}

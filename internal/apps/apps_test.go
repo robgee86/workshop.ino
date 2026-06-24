@@ -152,6 +152,30 @@ func TestRestoreArchiveZip(t *testing.T) {
 	assertRestored(t, appDir)
 }
 
+// TestRestoreArchivePreservesCache proves device-local state under .cache/
+// survives a restore while everything else is replaced.
+func TestRestoreArchivePreservesCache(t *testing.T) {
+	appDir := t.TempDir()
+	seedStale(t, appDir)
+	if err := os.MkdirAll(filepath.Join(appDir, ".cache", "models"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(appDir, ".cache", "models", "abstract.bin"), []byte("cached"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	archive := filepath.Join(t.TempDir(), "snap.zip")
+	makeZip(t, archive, map[string]string{"blink.ino": "new code\n", "lib/helper.h": "header\n"})
+	if err := RestoreArchive(appDir, archive); err != nil {
+		t.Fatalf("RestoreArchive error: %v", err)
+	}
+
+	assertRestored(t, appDir) // stale gone, snapshot applied
+	if got, _ := os.ReadFile(filepath.Join(appDir, ".cache", "models", "abstract.bin")); string(got) != "cached" {
+		t.Errorf(".cache contents should survive a restore, got %q", got)
+	}
+}
+
 func TestRestoreArchiveTarGz(t *testing.T) {
 	appDir := t.TempDir()
 	seedStale(t, appDir)
