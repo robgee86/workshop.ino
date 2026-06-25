@@ -84,11 +84,11 @@ sudo systemctl enable --now workshop.ino
 
 ### Docker container + Compose (+ optional systemd)
 
-1. Copy [`deploy/docker/`](deploy/docker/) (the compose file and `run-docker-compose.sh`) to the board.
-2. Put a `content/` folder next to them.
-3. `./run-docker-compose.sh` — runs in the foreground; Ctrl+C stops the stack.
+1. Copy [`deploy/docker/docker-compose.yml`](deploy/docker/docker-compose.yml) to the board.
+2. Put a `content/` folder next to it.
+3. `docker compose up` (add `-d` to run detached).
 
-The handbook is then on `http://<board-ip>:8080/`. The Compose file mounts the host's `/home/arduino/ArduinoApps` read-write at the container's `/apps`, where the image is configured to apply solutions (`-apps /apps`). Applied files are owned by the uid:gid the container runs as; `run-docker-compose.sh` passes your `HOST_UID`/`HOST_GID` so you own them (defaulting to the device's arduino user, `1000:1000`). The mounted apps dir must be writable by that uid.
+The handbook is then on `http://<board-ip>:8080/`. The Compose file mounts the host's `/home/arduino/ArduinoApps` read-write at the container's `/apps`, where the image is configured to apply solutions (`-apps /apps`). Applied files are owned by the uid:gid set in the Compose `user:` line, which defaults to `1000:1000` — the arduino user on the device. Edit that line for a different owner; the mounted apps dir must be writable by that uid.
 
 For a managed service that survives reboots and restarts on failure, install [`deploy/docker/workshop.ino.service`](deploy/docker/workshop.ino.service) (edit its `WorkingDirectory` to where you dropped the files):
 

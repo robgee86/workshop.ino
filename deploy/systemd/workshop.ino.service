@@ -1,6 +1,8 @@
 # Launch workshop.ino natively as a service.
 #
 # Install:
+#   Edit User/Group to match the user/group that will own files created by the app
+#   Edit WorkingDirectory/ExecStart to match the install location
 #   sudo cp deploy/systemd/workshop.ino.service /etc/systemd/system/
 #   sudo systemctl daemon-reload
 #   sudo systemctl enable --now workshop.ino
@@ -14,8 +16,10 @@ Wants=network-online.target
 
 [Service]
 Type=simple
+User=arduino
+Group=arduino
 WorkingDirectory=/home/arduino/workshop.ino
-ExecStart=/home/arduino/workshop.ino/workshop.ino-linux-arm64 -content /home/arduino/content -addr :8080
+ExecStart=/home/arduino/workshop.ino/workshop.ino-linux-arm64 -content ./content -addr :8080
 Restart=on-failure
 
 [Install]
